@@ -1,6 +1,7 @@
 const express = require('express');
 const bodyParser = require('body-parser');
-const cors = require('cors')
+const cors = require('cors');
+const { getSession } = require('./config/neo4j');
 const app = express();
 const port = process.env.PORT || 3001;
 
@@ -28,6 +29,23 @@ app.post('/api/login',(req, res)=>{
     res.status(401).json({message: 'Invalid credentials'})
   }
 })
+
+
+
+// 
+app.get('/api/test-neo4j', async (req, res) => {
+  const session = getSession();
+  try {
+    const result = await session.run('MATCH (n) RETURN n LIMIT 5');
+    const nodes = result.records.map(record => record.get('n').properties);
+    res.json(nodes);
+  } catch (error) {
+    console.error('Error connecting to Neo4j', error);
+    res.status(500).send('Error connecting to Neo4j');
+  } finally {
+    await session.close();
+  }
+});
 
 app.listen(port, () => {
   console.log(`Server is running on port ${port}`);

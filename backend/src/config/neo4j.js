@@ -4,13 +4,18 @@ require('dotenv').config();
 const {
   NEO4J_URI,
   NEO4J_USERNAME,
-  NEO4J_PASSWORD
+  NEO4J_PASSWORD,
+  NEO4J_DATABASE
 } = process.env;
 
-const driver = neo4j.driver(NEO4J_URI, neo4j.auth.basic(NEO4J_USERNAME, NEO4J_PASSWORD));
+
+const driver = neo4j.driver(NEO4J_URI, neo4j.auth.basic(NEO4J_USERNAME, NEO4J_PASSWORD), {
+  disableLosslessIntegers: true,
+  encrypted: 'ENCRYPTION_OFF'
+});
 
 const getSession = () => {
-  return driver.session();
+  return driver.session({ database: NEO4J_DATABASE || 'neo4j' });
 };
 
 module.exports = {
