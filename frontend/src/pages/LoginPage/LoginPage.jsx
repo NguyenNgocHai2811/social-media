@@ -22,7 +22,7 @@ const LoginPage = () => {
 
             if (response.ok) {
                 localStorage.setItem('token', data.token);
-                navigate('/bang-tin');
+                navigate('/newsfeed')
             } else {
                 alert(data.message || 'Login failed');
             }
@@ -37,6 +37,7 @@ const LoginPage = () => {
             <div className="login-box">
                 <h1 className="login-logo">ConnectF</h1>
                 <form onSubmit={handleSubmit}>
+                    
                     <input
                         type="text"
                         placeholder="Nhập email hoặc tên đăng nhập"
@@ -44,7 +45,9 @@ const LoginPage = () => {
                         onChange={(e) => setIdentifier(e.target.value)}
                         required
                     />
+
                     <input
+                        id='mat_khau'
                         type="password"
                         placeholder="Mật khẩu"
                         value={mat_khau}
