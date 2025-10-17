@@ -1,0 +1,96 @@
+/* Header.css */
+
+.header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background-color: #fff;
+    padding: 10px 30px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.08);
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    font-family: 'Inter', sans-serif;
+}
+
+/* Logo bên trái */
+.header-logo {
+    font-size: 1.6rem;
+    font-weight: 600;
+    font-style: italic;
+    color: #1e63ff;
+    letter-spacing: 0.5px;
+    cursor: pointer;
+    user-select: none;
+}
+
+/* Ô search giữa */
+.header-search {
+    flex: 1;
+    display: flex;
+    justify-content: center;
+    margin: 0 40px;
+}
+
+.header-search input {
+    width: 100%;
+    max-width: 400px;
+    padding: 10px 40px 10px 15px;
+    border: none;
+    border-radius: 8px;
+    background-color: #f3f3f3;
+    font-size: 0.95rem;
+    color: #333;
+    outline: none;
+    transition: box-shadow 0.2s ease;
+}
+
+.header-search input:focus {
+    box-shadow: 0 0 0 2px #1e63ff33;
+}
+
+/* Icon thanh bên phải */
+.header-nav {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+}
+
+.nav-icon {
+    font-size: 1.3rem;
+    color: #444;
+    cursor: pointer;
+    transition: transform 0.15s ease, color 0.15s ease;
+}
+
+.nav-icon:hover {
+    color: #1e63ff;
+    transform: scale(1.1);
+}
+
+/* Avatar và tên người dùng */
+.user-profile {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+}
+
+.user-avatar {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 2px solid #1e63ff;
+    transition: transform 0.15s ease;
+}
+
+.user-avatar:hover {
+    transform: scale(1.05);
+}
+
+.user-profile span {
+    font-size: 0.95rem;
+    font-weight: 500;
+    color: #333;
+}

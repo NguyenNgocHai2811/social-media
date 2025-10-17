@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
+import './Header.css'; // Import the CSS file
 
 const Header = () => {
     const [user, setUser] = useState(null);
@@ -30,22 +31,31 @@ const Header = () => {
     }, []);
 
     if (error) {
-        return <header><div>Error: {error}</div></header>;
+        return <header className="header"><div>Error: {error}</div></header>;
     }
 
     if (!user) {
-        return <header><div>Loading...</div></header>;
+        return <header className="header"><div>Loading...</div></header>;
     }
 
     return (
-        <header style={{ display: 'flex', justifyContent: 'space-between', padding: '1rem', borderBottom: '1px solid #ccc' }}>
-            <div>
-                <h2>ConnectF</h2>
+        <header className="header">
+            <div className="header-logo">
+                ConnectF
             </div>
-            <div>
-                <span>{user.ten_hien_thi}</span>
-                <img src={user.anh_dai_dien || 'default-avatar.png'} alt="avatar" style={{ width: '40px', height: '40px', borderRadius: '50%', marginLeft: '1rem' }} />
+            <div className="header-search">
+                <input type="text" placeholder="Search" />
             </div>
+            <nav className="header-nav">
+                {/* Placeholder for navigation icons */}
+                <span className="nav-icon">⌂</span> {/* Home */}
+                <span className="nav-icon">👥</span> {/* Friends */}
+                <span className="nav-icon">🔔</span> {/* Notifications */}
+                <div className="user-profile">
+                    <img src={user.anh_dai_dien || 'default-avatar.png'} alt="avatar" className="user-avatar" />
+                    <span>{user.ten_hien_thi}</span>
+                </div>
+            </nav>
         </header>
     );
 };
