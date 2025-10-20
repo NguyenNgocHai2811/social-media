@@ -51,10 +51,14 @@
     gap: 10px;
 }
 
+.header-nav {
+    display: flex;
+}
+
 .header-nav .nav-icon {
     font-size: 24px;
     color: #65676b;
-    background-color: #e4e6eb;
+   
     border-radius: 50%;
     width: 40px;
     height: 40px;
@@ -63,6 +67,7 @@
     justify-content: center;
     cursor: pointer;
 }
+
 
 .user-profile {
     display: flex;

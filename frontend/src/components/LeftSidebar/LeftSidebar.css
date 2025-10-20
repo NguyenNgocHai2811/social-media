@@ -5,26 +5,6 @@
     flex-direction: column;
 }
 
-.logo-container {
-    display: flex;
-    align-items: center;
-    padding-bottom: 20px;
-    margin-bottom: 20px;
-    border-bottom: 1px solid #ddd;
-}
-
-.logo-image {
-    width: 40px;
-    height: 40px;
-    margin-right: 10px;
-}
-
-.logo-text {
-    font-size: 24px;
-    font-weight: bold;
-    color: #1877f2; /* Facebook blue for example */
-}
-
 .sidebar-nav ul {
     list-style: none;
     padding: 0;
