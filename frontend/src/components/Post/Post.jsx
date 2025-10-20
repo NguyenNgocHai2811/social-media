@@ -11,6 +11,9 @@ const Post = ({ post }) => {
         return <img src={imageUrl} alt="Post content" className="post-image" />;
     };
 
+    const userName = user ? user.ten_hien_thi : 'Nguoi dung an danh';
+    const userAvatar = user ? user.anh_dai_dien : 'default-avatar.png';
+
     return (
         <div className="post-card">
             <div className="post-media">
@@ -18,9 +21,9 @@ const Post = ({ post }) => {
             </div>
             <div className="post-body">
                 <div className="post-header">
-                    <img src={user.anh_dai_dien || 'default-avatar.png'} alt="user avatar" className="user-avatar" />
+                   <img src={userAvatar} alt="user avatar" className="user-avatar" />
                     <div className="user-info">
-                        <span className="user-name">{user.ten_hien_thi}</span>
+                       <span className="user-name">{userName}</span>
                         <span className="post-timestamp">{new Date(ngay_tao).toLocaleString()}</span>
                     </div>
                 </div>

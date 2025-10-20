@@ -68,6 +68,21 @@ const createPost = async (postData) => {
             );
             newPost.media = mediaResult.records[0].get('m').properties;
         }
+        
+        // Fetch the user to return with the post
+        const userResult = await transaction.run(
+            `MATCH (u:NguoiDung {ma_nguoi_dung: $ma_nguoi_dung})
+             RETURN u`,
+            { ma_nguoi_dung }
+        );
+
+        if (userResult.records.length > 0) {
+            const user = userResult.records[0].get('u').properties;
+            // Sanitize user data
+            delete user.mat_khau;
+            delete user.email;
+            newPost.user = user;
+        }
 
         await transaction.commit();
         return newPost;
