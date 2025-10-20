@@ -1,96 +1,109 @@
-/* Header.css */
-
 .header {
+    background-color: #ffffff;
+    padding: 0 20px;
+    height: 60px;
     display: flex;
     align-items: center;
     justify-content: space-between;
-    background-color: #fff;
-    padding: 10px 30px;
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.08);
+    border-bottom: 1px solid #ddd;
     position: sticky;
     top: 0;
-    z-index: 100;
-    font-family: 'Inter', sans-serif;
+    z-index: 1000;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
 }
 
-/* Logo bên trái */
-.header-logo {
-    font-size: 1.6rem;
-    font-weight: 600;
-    font-style: italic;
-    color: #1e63ff;
-    letter-spacing: 0.5px;
-    cursor: pointer;
-    user-select: none;
-}
-
-/* Ô search giữa */
-.header-search {
-    flex: 1;
+.header-left {
     display: flex;
-    justify-content: center;
-    margin: 0 40px;
+    align-items: center;
+}
+
+.header-logo {
+    font-size: 28px;
+    font-weight: bold;
+    color: #1877f2;
+    margin-right: 15px;
+}
+
+.header-search {
+    position: relative;
+}
+
+.header-search .search-icon {
+    position: absolute;
+    left: 15px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #65676b;
 }
 
 .header-search input {
-    width: 100%;
-    max-width: 400px;
-    padding: 10px 40px 10px 15px;
+    background-color: #f0f2f5;
     border: none;
-    border-radius: 8px;
-    background-color: #f3f3f3;
-    font-size: 0.95rem;
-    color: #333;
-    outline: none;
-    transition: box-shadow 0.2s ease;
+    border-radius: 20px;
+    padding: 10px 15px 10px 40px; /* Left padding for icon */
+    width: 240px;
+    font-size: 15px;
 }
 
-.header-search input:focus {
-    box-shadow: 0 0 0 2px #1e63ff33;
-}
-
-/* Icon thanh bên phải */
-.header-nav {
+.header-right {
     display: flex;
     align-items: center;
-    gap: 20px;
+    gap: 10px;
 }
 
-.nav-icon {
-    font-size: 1.3rem;
-    color: #444;
+.header-nav .nav-icon {
+    font-size: 24px;
+    color: #65676b;
+    background-color: #e4e6eb;
+    border-radius: 50%;
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
     cursor: pointer;
-    transition: transform 0.15s ease, color 0.15s ease;
 }
 
-.nav-icon:hover {
-    color: #1e63ff;
-    transform: scale(1.1);
-}
-
-/* Avatar và tên người dùng */
 .user-profile {
     display: flex;
     align-items: center;
-    gap: 8px;
     cursor: pointer;
 }
 
 .user-avatar {
-    width: 36px;
-    height: 36px;
+    width: 40px;
+    height: 40px;
     border-radius: 50%;
-    object-fit: cover;
-    border: 2px solid #1e63ff;
-    transition: transform 0.15s ease;
 }
 
-.user-avatar:hover {
-    transform: scale(1.05);
+/* Hiding elements that are now in sidebars */
+.header-nav .nav-icon.home-icon,
+.header-nav .nav-icon.friends-icon {
+    display: none;
 }
 
-.user-profile span {
-    font-size: 0.95rem;
-    font-weight: 500;
-    color: #333;
+@media (max-width: 768px) {
+    .header-search {
+        display: none; /* Hide search bar on smaller screens */
+    }
+
+    .header-right .nav-icon {
+        width: 36px;
+        height: 36px;
+        font-size: 20px;
+    }
+
+    .header-left .header-logo {
+        font-size: 24px;
+    }
+}
+
+@media (max-width: 480px) {
+    .header {
+        padding: 0 10px;
+    }
+
+    .header-right {
+        gap: 5px;
+    }
 }

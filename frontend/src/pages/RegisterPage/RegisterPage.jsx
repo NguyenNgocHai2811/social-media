@@ -8,6 +8,10 @@ const RegisterPage = () => {
     const [mat_khau, setPassword] = useState('');
     const [confirmPassword, setConfirmPassword] = useState('');
     const navigate = useNavigate();
+    const isLocalhost = window.location.hostname === "localhost";
+    const API_BASE = isLocalhost
+        ? process.env.REACT_APP_API_URL
+        : process.env.REACT_APP_API_URL_LAN;
 
     const handleSubmit = async (e) => {
         e.preventDefault();
@@ -16,7 +20,7 @@ const RegisterPage = () => {
             return;
         }
         try {
-            const response = await fetch('http://localhost:3001/api/auth/register', {
+            const response = await fetch(`${API_BASE}/api/auth/register`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',

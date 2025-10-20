@@ -6,11 +6,15 @@ const LoginPage = () => {
     const [identifier, setIdentifier] = useState('');
     const [mat_khau, setPassword] = useState('');
     const navigate = useNavigate();
+    const isLocalhost = window.location.hostname === "localhost";
+    const API_BASE = isLocalhost
+        ? process.env.REACT_APP_API_URL
+        : process.env.REACT_APP_API_URL_LAN;
 
     const handleSubmit = async (e) => {
         e.preventDefault();
         try {
-            const response = await fetch('http://localhost:3001/api/auth/login', {
+            const response = await fetch(`${API_BASE}/api/auth/login`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -28,7 +32,7 @@ const LoginPage = () => {
             }
         } catch (error) {
             console.error('Login error:', error);
-            alert('An error occurred during login.');
+            alert(`An error occurred during login.${API_BASE}`);
         }
     };
 
