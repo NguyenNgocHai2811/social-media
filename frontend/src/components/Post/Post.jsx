@@ -11,14 +11,18 @@ const Post = ({ post }) => {
         return <img src={imageUrl} alt="Post content" className="post-image" />;
     };
 
+     // Check if media is a valid image before rendering
+    const isImageMedia = media && media.loai === 'anh' && media.duong_dan;
     const userName = user ? user.ten_hien_thi : 'Nguoi dung an danh';
     const userAvatar = user ? user.anh_dai_dien : 'default-avatar.png';
 
     return (
         <div className="post-card">
-            <div className="post-media">
-                {renderMedia()}
-            </div>
+            {isImageMedia && (
+                <div className="post-media">
+                    {renderMedia()}
+                </div>
+            )}
             <div className="post-body">
                 <div className="post-header">
                    <img src={userAvatar} alt="user avatar" className="user-avatar" />

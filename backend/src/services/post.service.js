@@ -53,33 +53,18 @@ const createPost = async (postData) => {
             );
             newPost.media = mediaResult.records[0].get('m').properties;
         } else {
-            // Handle default background color if no image is provided
-            const defaultColors = ['#ffadad', '#ffd6a5', '#fdffb6', '#caffbf', '#9bf6ff', '#a0c4ff', '#bdb2ff', '#ffc6ff'];
-            const randomColor = defaultColors[Math.floor(Math.random() * defaultColors.length)];
-            const ma_media = uuidv4();
-            const mediaResult = await transaction.run(
-                `CREATE (m:Media {
-                    ma_media: $ma_media,
-                    loai: 'mau_nen',
-                    duong_dan: $randomColor,
-                    ngay_tai_len: $now
-                }) RETURN m`,
-                { ma_media, randomColor, now }
-            );
-            newPost.media = mediaResult.records[0].get('m').properties;
+             newPost.media = null;
         }
-        
-        // Fetch the user to return with the post
+
+        // Fetch user information to return with the post
         const userResult = await transaction.run(
-            `MATCH (u:NguoiDung {ma_nguoi_dung: $ma_nguoi_dung})
-             RETURN u`,
+            'MATCH (u:NguoiDung {ma_nguoi_dung: $ma_nguoi_dung}) RETURN u',
             { ma_nguoi_dung }
         );
-
+        
         if (userResult.records.length > 0) {
             const user = userResult.records[0].get('u').properties;
-            // Sanitize user data
-            delete user.mat_khau;
+            delete user.mat_khau; // Sanitize user data
             delete user.email;
             newPost.user = user;
         }
