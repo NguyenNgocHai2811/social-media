@@ -2,9 +2,8 @@ const express = require('express');
 const router = express.Router();
 const postController = require('../controllers/post.controller');
 const authMiddleware = require('../middleware/auth.middleware');
-const upload = require('../middleware/upload.middleware');
+const { uploadPostImage } = require('../middleware/upload.middleware');
 
-router.post('/',authMiddleware.verifyToken, upload.single('image'), postController.createPost);
 router.get('/', authMiddleware.verifyToken, postController.getAllPosts);
-
+router.post('/',authMiddleware.verifyToken, uploadPostImage.single('image'), postController.createPost);
 module.exports = router;

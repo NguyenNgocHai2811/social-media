@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
+import searchIcon from '../../assets/images/search.svg'
 import './Header.css';
 import { useNavigate } from 'react-router-dom';
 
@@ -49,7 +50,7 @@ const Header = () => {
                     ConnectF
                 </div>
                 <div className="header-search">
-                    <span className="search-icon">🔍</span>
+                    <img src={searchIcon} alt="Search Icon" className="search-icon" />
                     <input type="text" placeholder="Search" />
                 </div>
             </div>

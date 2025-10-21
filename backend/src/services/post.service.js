@@ -2,7 +2,7 @@ const { getSession } = require('../config/neo4j');
 const { v4: uuidv4 } = require('uuid');
 
 const createPost = async (postData) => {
-    const { noi_dung, che_do_rieng_tu = 'cong_khai', ma_nguoi_dung, imagePath } = postData;
+    const { noi_dung, che_do_rieng_tu = 'cong_khai', ma_nguoi_dung, imageFile } = postData;
     const session = getSession();
     const transaction = session.beginTransaction();
     
@@ -32,16 +32,23 @@ const createPost = async (postData) => {
         );
 
         // Handle media (image) if it exists
-        if (imagePath) {
+        
+        if (imageFile) {
             const ma_media = uuidv4();
             const mediaResult = await transaction.run(
                 `CREATE (m:Media {
                     ma_media: $ma_media,
                     loai: 'anh',
-                    duong_dan: $imagePath,
+                    duong_dan: $imageUrl,
+                    public_id: $publicId,
                     ngay_tai_len: $now
                 }) RETURN m`,
-                { ma_media, imagePath, now }
+                { 
+                    ma_media, 
+                    imageUrl: imageFile.path, // secure_url from Cloudinary
+                    publicId: imageFile.filename, // public_id from Cloudinary
+                    now 
+                }
             );
             
             // Create the relationship between Post and Media
