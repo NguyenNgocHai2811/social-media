@@ -1,0 +1,66 @@
+.stories-container {
+     flex-shrink: 0; /* Prevent the container from shrinking */
+    background-color: #ffffff;
+    border-radius: 8px;
+    padding: 16px;
+    margin-bottom: 20px;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+}
+
+.stories-title {
+    font-size: 18px;
+    font-weight: 600;
+    margin-bottom: 16px;
+}
+
+.stories-scroll-container {
+    display: flex;
+    overflow-x: auto;
+    padding-bottom: 10px; /* For scrollbar */
+    gap: 10px;
+}
+.story-card {
+    flex: 0 0 110px;
+    height: 200px;
+    border-radius: 8px;
+    background-size: cover;
+    background-position: center;
+    position: relative;
+    cursor: pointer;
+    color: white;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    padding: 8px;
+    transition: transform 0.2s ease-in-out;
+}
+
+.story-card:hover {
+    transform: scale(1.05);
+}
+
+.story-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(to top, rgba(0,0,0,0.6), rgba(0,0,0,0));
+    border-radius: 8px;
+}
+
+.story-avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    border: 3px solid #1877f2; /* Blue border like Facebook stories */
+    z-index: 1;
+}
+
+.story-user {
+    font-size: 14px;
+    font-weight: 600;
+    z-index: 1;
+    text-shadow: 1px 1px 3px rgba(0,0,0,0.7);
+}

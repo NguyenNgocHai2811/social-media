@@ -1,0 +1,137 @@
+
+
+.post-list {
+    /* Enables vertical scrolling when content overflows */
+    overflow-y: auto; 
+     /* Prevents horizontal scrolling */
+    overflow-x: hidden;
+    /* Ensures the list grows to fill the container */
+    flex-grow: 1;
+    padding-right: 10px; /* Adds some space for the scrollbar */
+    min-height: 0;
+}
+.post-card {
+    background-color: #ffffff;
+    border-radius: 8px;
+    padding: 16px;
+    margin-bottom: 20px;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+}
+
+.post-header {
+    display: flex;
+    align-items: center;
+    margin-bottom: 12px;
+}
+
+.user-avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    margin-right: 12px;
+}
+
+.user-info {
+    display: flex;
+    flex-direction: column;
+}
+
+.user-name {
+    font-weight: 600;
+    font-size: 15px;
+}
+
+.post-timestamp {
+    font-size: 13px;
+    color: #65676b;
+}
+
+.post-content {
+    margin-bottom: 12px;
+    font-size: 15px;
+    line-height: 1.34;
+}
+
+.post-tags {
+    margin-bottom: 12px;
+}
+
+.post-tag {
+    color: #056BE1;
+    font-weight: 600;
+    margin-right: 8px;
+    cursor: pointer;
+}
+
+.post-image {
+    width: 100%;
+    border-radius: 8px;
+    margin-bottom: 12px;
+}
+
+.post-stats {
+    display: flex;
+    justify-content: space-between;
+    padding: 10px 0;
+    border-top: 1px solid #e4e6eb;
+    border-bottom: 1px solid #e4e6eb;
+    margin-bottom: 5px;
+    font-size: 15px;
+    color: #65676b;
+}
+
+.stats-group {
+    display: flex;
+    gap: 16px;
+}
+
+.stat-item {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.post-actions {
+    display: flex;
+    justify-content: space-around;
+    padding: 5px 0;
+}
+
+.action-button {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 8px;
+    border-radius: 6px;
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 15px;
+    font-weight: 600;
+    color: #65676b;
+    gap: 6px;
+}
+
+.action-button:hover {
+    background-color: #f0f2f5;
+}
+
+.comment-input-container {
+    display: flex;
+    align-items: center;
+    padding-top: 10px;
+}
+
+.comment-input {
+    flex: 1;
+    background-color: #f0f2f5;
+    border: none;
+    border-radius: 20px;
+    padding: 8px 12px;
+    font-size: 15px;
+}
+
+.comment-input:focus {
+    outline: none;
+}
