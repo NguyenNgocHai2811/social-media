@@ -6,9 +6,9 @@ const Post = ({ post }) => {
 
     const renderMedia = () => {
         if (!media || !media.duong_dan) return null;
-        // Assuming media.duong_dan is the relative path from the backend's upload folder
-        const imageUrl = `http://localhost:3001${media.duong_dan}`;
-        return <img src={imageUrl} alt="Post content" className="post-image" />;
+    
+        const imageUrl = media.duong_dan;
+         return <img src={imageUrl} alt="Post content" className="post-image" />;
     };
 
      // Check if media is a valid image before rendering
