@@ -1,4 +1,6 @@
 const { getSession } = require('../config/neo4j');
+const cloudinary = require('../config/cloudinary');
+const { v4: uuidv4 } = require('uuid');
 
 const getUserById = async (userId) => {
     const session = getSession();
@@ -21,83 +23,119 @@ const getUserById = async (userId) => {
     }
 };
 
-const updateUserAvatar = async (userId, file) => {
+const getUserProfileWithPosts = async (userId) => {
     const session = getSession();
     try {
-        // First, get the current user data to find the old avatar's public_id
+        // Step 1: Get user profile
         const userResult = await session.run(
-            'MATCH (u:NguoiDung {ma_nguoi_dung: $userId}) RETURN u.avatar_public_id as avatar_public_id',
+            'MATCH (u:NguoiDung {ma_nguoi_dung: $userId}) RETURN u',
             { userId }
         );
 
-        if (userResult.records.length > 0) {
-            const oldPublicId = userResult.records[0].get('avatar_public_id');
-            if (oldPublicId) {
-                // Asynchronously delete the old image from Cloudinary
-                cloudinary.uploader.destroy(oldPublicId).catch(err => {
-                    console.error("Failed to delete old avatar from Cloudinary:", err);
-                });
-            }
+        if (userResult.records.length === 0) {
+            throw new Error('User not found');
         }
 
-        // Now, update the user node with the new avatar info
-        const result = await session.run(
-            `MATCH (u:NguoiDung {ma_nguoi_dung: $userId})
-             SET u.anh_dai_dien = $avatarUrl, u.avatar_public_id = $publicId
-             RETURN u`,
-            {
-                userId,
-                avatarUrl: file.path, // This is the secure_url from Cloudinary
-                publicId: file.filename, // This is the public_id from Cloudinary
-            }
+        const user = userResult.records[0].get('u').properties;
+        delete user.mat_khau;
+        delete user.email;
+
+        // Step 2: Get user's posts
+        const postsResult = await session.run(
+            `
+            MATCH (author:NguoiDung {ma_nguoi_dung: $userId})-[r:DA_DANG]->(post:BaiDang)
+            OPTIONAL MATCH (post)-[:CO_MEDIA]->(media:Media)
+            RETURN post, media, author
+            ORDER BY post.thoi_gian_dang DESC
+            `,
+            { userId }
         );
 
-        if (result.records.length === 0) {
-            // This case should ideally not happen if the user exists
-            throw new Error('User not found during avatar update.');
-        }
+        const posts = postsResult.records.map(record => {
+            const post = record.get('post').properties;
+            const media = record.get('media');
+            const author = record.get('author').properties;
+            delete author.mat_khau;
+            delete author.email;
+            return {
+                ...post,
+                media: media ? media.properties : null,
+                tac_gia: author
+            };
+        });
 
-        const updatedUser = result.records[0].get('u').properties;
-        delete updatedUser.mat_khau;
-        return updatedUser;
+        // Step 3: Get friend count (we'll implement this properly later)
+        // For now, let's return a placeholder
+        const friendCount = 0; // Placeholder
+
+        return { user, posts, friendCount };
 
     } finally {
         await session.close();
     }
-};
+}
 
-const updateUserProfile = async (userId, tenHienThi, file) => {
+
+const updateUserProfile = async (userId, profileData, files) => {
     const session = getSession();
     try {
-        let setClauses = [];
+        const setClauses = [];
         const params = { userId };
+        const { ten_hien_thi, song_o_dau, tinh_trang_quan_he, gioi_thieu } = profileData;
 
-        if (tenHienThi) {
-            setClauses.push('u.ten_hien_thi = $tenHienThi');
-            params.tenHienThi = tenHienThi;
+        // Handle text fields
+        if (ten_hien_thi) {
+            setClauses.push('u.ten_hien_thi = $ten_hien_thi');
+            params.ten_hien_thi = ten_hien_thi;
+        }
+        if (song_o_dau) {
+            setClauses.push('u.song_o_dau = $song_o_dau');
+            params.song_o_dau = song_o_dau;
+        }
+        if (tinh_trang_quan_he) {
+            setClauses.push('u.tinh_trang_quan_he = $tinh_trang_quan_he');
+            params.tinh_trang_quan_he = tinh_trang_quan_he;
+        }
+        if (gioi_thieu) {
+            setClauses.push('u.gioi_thieu = $gioi_thieu');
+            params.gioi_thieu = gioi_thieu;
         }
 
-        if (file) {
-            // If a new file is uploaded, first get the old avatar's public_id to delete it
-            const userResult = await session.run(
-                'MATCH (u:NguoiDung {ma_nguoi_dung: $userId}) RETURN u.avatar_public_id as avatar_public_id',
-                { userId }
-            );
+        // Get current public IDs for potential deletion
+        const userResult = await session.run(
+            'MATCH (u:NguoiDung {ma_nguoi_dung: $userId}) RETURN u.avatar_public_id, u.anh_bia_public_id',
+            { userId }
+        );
 
-            if (userResult.records.length > 0) {
-                const oldPublicId = userResult.records[0].get('avatar_public_id');
-                if (oldPublicId) {
-                    // Asynchronously delete the old image from Cloudinary
-                    cloudinary.uploader.destroy(oldPublicId).catch(err => {
-                        console.error("Failed to delete old avatar from Cloudinary:", err);
-                    });
-                }
+        const oldAvatarPublicId = userResult.records.length > 0 ? userResult.records[0].get('u.avatar_public_id') : null;
+        const oldAnhBiaPublicId = userResult.records.length > 0 ? userResult.records[0].get('u.anh_bia_public_id') : null;
+
+        // Handle avatar file
+        if (files && files.avatar) {
+            const avatarFile = files.avatar[0];
+            if (oldAvatarPublicId) {
+                cloudinary.uploader.destroy(oldAvatarPublicId).catch(err => {
+                    console.error("Failed to delete old avatar from Cloudinary:", err);
+                });
             }
-            
-            setClauses.push('u.anh_dai_dien = $avatarUrl, u.avatar_public_id = $publicId');
-            params.avatarUrl = file.path;
-            params.publicId = file.filename;
+            setClauses.push('u.anh_dai_dien = $avatarUrl, u.avatar_public_id = $avatarPublicId');
+            params.avatarUrl = avatarFile.path;
+            params.avatarPublicId = avatarFile.filename;
         }
+
+        // Handle cover photo file
+        if (files && files.anh_bia) {
+            const anhBiaFile = files.anh_bia[0];
+            if (oldAnhBiaPublicId) {
+                cloudinary.uploader.destroy(oldAnhBiaPublicId).catch(err => {
+                    console.error("Failed to delete old cover photo from Cloudinary:", err);
+                });
+            }
+            setClauses.push('u.anh_bia = $anhBiaUrl, u.anh_bia_public_id = $anhBiaPublicId');
+            params.anhBiaUrl = anhBiaFile.path;
+            params.anhBiaPublicId = anhBiaFile.filename;
+        }
+
 
         if (setClauses.length === 0) {
             // Nothing to update
@@ -120,7 +158,11 @@ const updateUserProfile = async (userId, tenHienThi, file) => {
         delete updatedUser.mat_khau;
         return updatedUser;
 
-    } finally {
+    } catch (error) {
+        console.error("Error updating user profile in service:", error);
+        throw error;
+    }
+    finally {
         await session.close();
     }
 };
@@ -128,6 +170,6 @@ const updateUserProfile = async (userId, tenHienThi, file) => {
 
 module.exports = {
     getUserById,
-    updateUserAvatar,
     updateUserProfile,
+    getUserProfileWithPosts,
 };

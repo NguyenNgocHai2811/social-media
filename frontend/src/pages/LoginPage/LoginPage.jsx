@@ -1,11 +1,14 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import axios from 'axios';
 import './LoginPage.css';
 
 const LoginPage = () => {
     const [identifier, setIdentifier] = useState('');
     const [mat_khau, setPassword] = useState('');
     const navigate = useNavigate();
+    
+    // Re-add the logic to determine the correct API base URL
     const isLocalhost = window.location.hostname === "localhost";
     const API_BASE = isLocalhost
         ? process.env.REACT_APP_API_URL
@@ -14,25 +17,24 @@ const LoginPage = () => {
     const handleSubmit = async (e) => {
         e.preventDefault();
         try {
-            const response = await fetch(`${API_BASE}/api/auth/login`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({ identifier, mat_khau }),
+            // Use the correct API_BASE for the axios call
+            const response = await axios.post(`${API_BASE}/api/auth/login`, {
+                identifier,
+                mat_khau
             });
 
-            const data = await response.json();
-
-            if (response.ok) {
-                localStorage.setItem('token', data.token);
-                navigate('/newsfeed')
+            if (response.data && response.data.token) {
+                const { user, token } = response.data;
+                localStorage.setItem('token', token);
+                localStorage.setItem('userId', user.ma_nguoi_dung); 
+                navigate('/newsfeed');
             } else {
-                alert(data.message || 'Login failed');
+                alert(response.data.message || 'Login failed');
             }
         } catch (error) {
             console.error('Login error:', error);
-            alert(`An error occurred during login.${API_BASE}`);
+            const errorMessage = error.response ? error.response.data.message : `An error occurred during login. Check if the API server is running at ${API_BASE}.`;
+            alert(errorMessage);
         }
     };
 

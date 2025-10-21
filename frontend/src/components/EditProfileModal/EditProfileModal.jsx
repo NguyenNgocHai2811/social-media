@@ -1,31 +1,51 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import axios from 'axios';
 import './EditProfileModal.css';
+import defaultAvatar from '../../assets/images/default-avatar.jpg';
 
 const EditProfileModal = ({ user, onClose, onProfileUpdate }) => {
-    const [tenHienThi, setTenHienThi] = useState(user.ten_hien_thi);
-    const [selectedFile, setSelectedFile] = useState(null);
-    const [preview, setPreview] = useState(user.anh_dai_dien);
+    // State for user profile fields
+    const [tenHienThi, setTenHienThi] = useState(user?.ten_hien_thi || '');
+    const [gioiThieu, setGioiThieu] = useState(user?.gioi_thieu || '');
+    const [songODau, setSongODau] = useState(user?.song_o_dau || '');
+    const [tinhTrangQuanHe, setTinhTrangQuanHe] = useState(user?.tinh_trang_quan_he || '');
+    
+    // State for file handling
+    const [avatarFile, setAvatarFile] = useState(null);
+    const [coverFile, setCoverFile] = useState(null);
+    const [avatarPreview, setAvatarPreview] = useState(user?.anh_dai_dien);
+    const [coverPreview, setCoverPreview] = useState(user?.anh_bia);
+
+    // State for submission status
     const [error, setError] = useState('');
     const [isSubmitting, setIsSubmitting] = useState(false);
 
+    // Refs for file inputs
+    const avatarInputRef = useRef(null);
+    const coverInputRef = useRef(null);
+
+    // Effect for avatar preview
     useEffect(() => {
-        if (!selectedFile) {
-            setPreview(user.anh_dai_dien);
+        if (!avatarFile) {
+            setAvatarPreview(user?.anh_dai_dien || defaultAvatar);
             return;
         }
-        const objectUrl = URL.createObjectURL(selectedFile);
-        setPreview(objectUrl);
-
-        // free memory when ever this component is unmounted
+        const objectUrl = URL.createObjectURL(avatarFile);
+        setAvatarPreview(objectUrl);
         return () => URL.revokeObjectURL(objectUrl);
-    }, [selectedFile, user.anh_dai_dien]);
+    }, [avatarFile, user?.anh_dai_dien]);
 
-    const handleFileChange = (e) => {
-        if (e.target.files && e.target.files[0]) {
-            setSelectedFile(e.target.files[0]);
+    // Effect for cover photo preview
+    useEffect(() => {
+        if (!coverFile) {
+            setCoverPreview(user?.anh_bia);
+            return;
         }
-    };
+        const objectUrl = URL.createObjectURL(coverFile);
+        setCoverPreview(objectUrl);
+        return () => URL.revokeObjectURL(objectUrl);
+    }, [coverFile, user?.anh_bia]);
+
 
     const handleSubmit = async (e) => {
         e.preventDefault();
@@ -33,15 +53,26 @@ const EditProfileModal = ({ user, onClose, onProfileUpdate }) => {
         setIsSubmitting(true);
 
         const formData = new FormData();
-        formData.append('ten_hien_thi', tenHienThi);
-        if (selectedFile) {
-            formData.append('avatar', selectedFile);
+        // Append text fields if they have changed
+        if (tenHienThi !== user.ten_hien_thi) formData.append('ten_hien_thi', tenHienThi);
+        if (gioiThieu !== user.gioi_thieu) formData.append('gioi_thieu', gioiThieu);
+        if (songODau !== user.song_o_dau) formData.append('song_o_dau', songODau);
+        if (tinhTrangQuanHe !== user.tinh_trang_quan_he) formData.append('tinh_trang_quan_he', tinhTrangQuanHe);
+        
+        // Append files if they have been selected
+        if (avatarFile) formData.append('avatar', avatarFile);
+        if (coverFile) formData.append('anh_bia', coverFile);
+        
+        // If nothing has changed, just close the modal.
+        if ([...formData.entries()].length === 0) {
+            onClose();
+            return;
         }
 
         const token = localStorage.getItem('token');
 
         try {
-            const res = await axios.put('http://localhost:3001/api/users/me', formData, {
+            const res = await axios.put('/api/users/me', formData, {
                 headers: {
                     'Content-Type': 'multipart/form-data',
                     Authorization: `Bearer ${token}`,
@@ -60,39 +91,71 @@ const EditProfileModal = ({ user, onClose, onProfileUpdate }) => {
     return (
         <div className="modal-backdrop" onClick={onClose}>
             <div className="modal-content" onClick={e => e.stopPropagation()}>
-                <h2>Edit Profile</h2>
+                <div className="modal-header">
+                    <h2>Chỉnh sửa trang cá nhân</h2>
+                    <button onClick={onClose} className="close-button">&times;</button>
+                </div>
                 <form onSubmit={handleSubmit}>
-                    <div className="avatar-upload">
-                        <label htmlFor="avatar-input">
-                            <img src={preview} alt="Preview" className="avatar-preview" />
-                        </label>
-                        <input
-                            id="avatar-input"
-                            type="file"
-                            accept="image/*"
-                            onChange={handleFileChange}
-                            style={{ display: 'none' }}
-                        />
+                    {/* Cover Photo Upload */}
+                    <div className="form-group">
+                        <label>Ảnh bìa</label>
+                        <div className="cover-photo-upload">
+                            {coverPreview && <img src={coverPreview} alt="Cover Preview" className="cover-photo-preview" />}
+                            <button type="button" onClick={() => coverInputRef.current.click()}>Chỉnh sửa</button>
+                            <input
+                                type="file"
+                                accept="image/*"
+                                ref={coverInputRef}
+                                style={{ display: 'none' }}
+                                onChange={(e) => setCoverFile(e.target.files[0])}
+                            />
+                        </div>
+                    </div>
+                    
+                    {/* Avatar Upload */}
+                    <div className="form-group">
+                        <label>Ảnh đại diện</label>
+                        <div className="avatar-upload">
+                            <img src={avatarPreview} alt="Avatar Preview" className="avatar-preview" onClick={() => avatarInputRef.current.click()}/>
+                            <input
+                                type="file"
+                                accept="image/*"
+                                ref={avatarInputRef}
+                                style={{ display: 'none' }}
+                                onChange={(e) => setAvatarFile(e.target.files[0])}
+                            />
+                        </div>
+                    </div>
+
+                    {/* Text Inputs */}
+                    <div className="form-group">
+                        <label htmlFor="tenHienThi">Tên hiển thị</label>
+                        <input id="tenHienThi" type="text" value={tenHienThi} onChange={(e) => setTenHienThi(e.target.value)} />
                     </div>
 
                     <div className="form-group">
-                        <label htmlFor="tenHienThi">Display Name</label>
-                        <input
-                            id="tenHienThi"
-                            type="text"
-                            value={tenHienThi}
-                            onChange={(e) => setTenHienThi(e.target.value)}
-                        />
+                        <label htmlFor="gioiThieu">Tiểu sử</label>
+                        <textarea id="gioiThieu" value={gioiThieu} onChange={(e) => setGioiThieu(e.target.value)} />
+                    </div>
+
+                    <div className="form-group">
+                        <label htmlFor="songODau">Sống tại</label>
+                        <input id="songODau" type="text" value={songODau} onChange={(e) => setSongODau(e.target.value)} />
                     </div>
                     
+                    <div className="form-group">
+                        <label htmlFor="tinhTrangQuanHe">Tình trạng quan hệ</label>
+                        <input id="tinhTrangQuanHe" type="text" value={tinhTrangQuanHe} onChange={(e) => setTinhTrangQuanHe(e.target.value)} />
+                    </div>
+
                     {error && <p className="error-message">{error}</p>}
 
                     <div className="form-actions">
-                        <button type="button" onClick={onClose} disabled={isSubmitting}>
-                            Cancel
+                        <button type="button" onClick={onClose} disabled={isSubmitting} className="cancel-btn">
+                            Hủy
                         </button>
-                        <button type="submit" disabled={isSubmitting}>
-                            {isSubmitting ? 'Saving...' : 'Save'}
+                        <button type="submit" disabled={isSubmitting} className="save-btn">
+                            {isSubmitting ? 'Đang lưu...' : 'Lưu'}
                         </button>
                     </div>
                 </form>
