@@ -29,7 +29,7 @@ const NewsFeed = () => {
                 </aside>
                 <main className="main-content">
                     <Stories />
-                    {showCreatePost && <CreatePost onPostCreated={handlePostCreated}/>}
+                      {showCreatePost && <CreatePost onPostCreated={handlePostCreated} onClose={toggleCreatePost}/>}
                     <PostList newPost={newPost} />
                 </main>
                 <aside className="right-sidebar">

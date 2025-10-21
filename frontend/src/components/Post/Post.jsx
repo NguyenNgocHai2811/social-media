@@ -14,7 +14,7 @@ const Post = ({ post }) => {
      // Check if media is a valid image before rendering
     const isImageMedia = media && media.loai === 'anh' && media.duong_dan;
     const userName = user ? user.ten_hien_thi : 'Nguoi dung an danh';
-    const userAvatar = user ? user.anh_dai_dien : 'default-avatar.png';
+     const userAvatar = user && user.anh_dai_dien ? user.anh_dai_dien : 'default-avatar.png';
 
     return (
         <div className="post-card">

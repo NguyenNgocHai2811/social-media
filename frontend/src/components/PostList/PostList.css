@@ -1,3 +1,15 @@
+
+
+.post-list {
+    /* Enables vertical scrolling when content overflows */
+    overflow-y: auto; 
+     /* Prevents horizontal scrolling */
+    overflow-x: hidden;
+    /* Ensures the list grows to fill the container */
+    flex-grow: 1;
+    padding-right: 10px; /* Adds some space for the scrollbar */
+    min-height: 0;
+}
 .post-card {
     background-color: #ffffff;
     border-radius: 8px;

@@ -4,13 +4,13 @@ import './RightSidebar.css';
 const RightSidebar = () => {
     // Mock data for friends list
     const friends = [
-        { name: 'Nguyen Ngoc Hai', avatar: 'https://via.placeholder.com/40' },
-        { name: 'Tran Van An', avatar: 'https://via.placeholder.com/40' },
-        { name: 'Le Thi Binh', avatar: 'https://via.placeholder.com/40' },
-        { name: 'Pham Minh Chien', avatar: 'https://via.placeholder.com/40' },
-        { name: 'Vo Thi Dao', avatar: 'https://via.placeholder.com/40' },
-        { name: 'Do Xuan E', avatar: 'https://via.placeholder.com/40' },
-        { name: 'Ngo Van F', avatar: 'https://via.placeholder.com/40' },
+        { name: 'Nguyen Ngoc Hai'},
+        { name: 'Tran Van An' },
+        { name: 'Le Thi Binh'  },
+        { name: 'Pham Minh Chien' },
+        { name: 'Vo Thi Dao' },
+        { name: 'Do Xuan E' },
+        { name: 'Ngo Van F' },
     ];
 
     return (
@@ -20,7 +20,6 @@ const RightSidebar = () => {
                 {friends.map((friend, index) => (
                     <li key={index} className="friend-item">
                         <div className="friend-avatar-container">
-                            <img src={friend.avatar} alt={`${friend.name}'s avatar`} className="friend-avatar" />
                             <span className="online-indicator"></span>
                         </div>
                         <span className="friend-name">{friend.name}</span>
