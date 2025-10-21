@@ -7,9 +7,10 @@ const { uploadAvatar } = require('../middleware/upload.middleware');
 router.get('/me', authMiddleware.verifyToken, userController.getUserProfile);
 
 router.put(
-    '/me/avatar', 
-    authMiddleware.verifyToken, 
-    uploadAvatar.single('avatar'), 
-    userController.updateUserAvatar
+    '/me',
+    authMiddleware.verifyToken,
+    uploadAvatar.single('avatar'),
+    userController.updateUserProfile
 );
+
 module.exports = router;

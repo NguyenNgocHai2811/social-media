@@ -66,7 +66,68 @@ const updateUserAvatar = async (userId, file) => {
     }
 };
 
+const updateUserProfile = async (userId, tenHienThi, file) => {
+    const session = getSession();
+    try {
+        let setClauses = [];
+        const params = { userId };
+
+        if (tenHienThi) {
+            setClauses.push('u.ten_hien_thi = $tenHienThi');
+            params.tenHienThi = tenHienThi;
+        }
+
+        if (file) {
+            // If a new file is uploaded, first get the old avatar's public_id to delete it
+            const userResult = await session.run(
+                'MATCH (u:NguoiDung {ma_nguoi_dung: $userId}) RETURN u.avatar_public_id as avatar_public_id',
+                { userId }
+            );
+
+            if (userResult.records.length > 0) {
+                const oldPublicId = userResult.records[0].get('avatar_public_id');
+                if (oldPublicId) {
+                    // Asynchronously delete the old image from Cloudinary
+                    cloudinary.uploader.destroy(oldPublicId).catch(err => {
+                        console.error("Failed to delete old avatar from Cloudinary:", err);
+                    });
+                }
+            }
+            
+            setClauses.push('u.anh_dai_dien = $avatarUrl, u.avatar_public_id = $publicId');
+            params.avatarUrl = file.path;
+            params.publicId = file.filename;
+        }
+
+        if (setClauses.length === 0) {
+            // Nothing to update
+            return await getUserById(userId);
+        }
+
+        const query = `
+            MATCH (u:NguoiDung {ma_nguoi_dung: $userId})
+            SET ${setClauses.join(', ')}
+            RETURN u
+        `;
+
+        const result = await session.run(query, params);
+
+        if (result.records.length === 0) {
+            throw new Error('User not found, could not update profile.');
+        }
+
+        const updatedUser = result.records[0].get('u').properties;
+        delete updatedUser.mat_khau;
+        return updatedUser;
+
+    } finally {
+        await session.close();
+    }
+};
+
+
 module.exports = {
     getUserById,
-    updateUserAvatar
+    updateUserAvatar,
+    updateUserProfile,
 };

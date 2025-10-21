@@ -24,7 +24,26 @@ const updateUserAvatar = async (req, res) => {
         res.status(500).json({ message: error.message });
     }
 };
+
+const updateUserProfile = async (req, res) => {
+    const { ten_hien_thi } = req.body;
+    const file = req.file;
+
+    try {
+        const updatedUser = await userService.updateUserProfile(req.userId, ten_hien_thi, file);
+        res.status(200).json(updatedUser);
+    } catch (error) {
+        if (file) {
+            // If something goes wrong, make sure to delete the uploaded file from Cloudinary
+            cloudinary.uploader.destroy(file.filename).catch(err => {
+                console.error("Failed to delete orphaned file after an error:", err);
+            });
+        }
+        res.status(500).json({ message: error.message });
+    }
+};
 module.exports = {
     getUserProfile,
-    updateUserAvatar
+    updateUserAvatar,
+    updateUserProfile
 }
