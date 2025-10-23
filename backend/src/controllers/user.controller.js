@@ -16,7 +16,7 @@ const getMe = async (req, res) => {
 const getUserProfile = async(req, res) => {
     try {
         const { userId } = req.params;
-        const profileData = await userService.getUserProfileWithPost(userId);
+         const profileData = await userService.getUserProfileWithPosts(userId);
         res.status(200).json(profileData);
      } catch (error) {
         res.status(404).json({message: error.message})

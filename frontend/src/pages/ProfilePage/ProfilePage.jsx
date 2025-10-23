@@ -26,9 +26,6 @@ const ProfilePage = () => {
         ? process.env.REACT_APP_API_URL
         : process.env.REACT_APP_API_URL_LAN;
 
-        console.log("✅ API_BASE =", API_BASE);
-console.log("✅ Token =", token);
-
     const fetchProfileData = useCallback(async () => {
         try {
             // Use the correct API_BASE for the axios call
