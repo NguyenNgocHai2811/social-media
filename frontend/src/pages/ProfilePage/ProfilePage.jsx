@@ -19,15 +19,18 @@ const ProfilePage = () => {
     const token = localStorage.getItem('token');
     const loggedInUserId = token ? jwtDecode(token).ma_nguoi_dung : null;
 
-    // Add the logic to determine the correct API base URL
     const isLocalhost = window.location.hostname === "localhost";
     const API_BASE = isLocalhost
         ? process.env.REACT_APP_API_URL
         : process.env.REACT_APP_API_URL_LAN;
 
     const fetchProfileData = useCallback(async () => {
+        if (!token) {
+            setError("Authentication required.");
+            setIsLoading(false);
+            return;
+        }
         try {
-            // Use the correct API_BASE for the axios call
             const response = await axios.get(`${API_BASE}/api/users/${userId}`, {
                 headers: { Authorization: `Bearer ${token}` }
             });
@@ -60,12 +63,12 @@ const ProfilePage = () => {
         return <div className="error-message">{error}</div>;
     }
 
-    if (!profileData) {
+    if (!profileData || !profileData.user) {
         return <div>User not found.</div>;
     }
 
     const { user, posts, friendCount } = profileData;
-    const isOwnProfile = user.ma_nguoi_dung === loggedInUserId;
+    const isOwnProfile = user && loggedInUserId === user.ma_nguoi_dung;
 
     return (
         <div className="profile-page">
@@ -80,7 +83,7 @@ const ProfilePage = () => {
                     </div>
                     <div className="profile-details">
                         <h1 className="profile-name">{user.ten_hien_thi}</h1>
-                        <p className="profile-friend-count">{friendCount} bạn bè</p>
+                        <p className="profile-friend-count">{friendCount || 0} bạn bè</p>
                     </div>
                     <div className="profile-actions">
                         {isOwnProfile && (
@@ -92,7 +95,7 @@ const ProfilePage = () => {
                 </div>
             </div>
             <div className="profile-content">
-                {/* <PostList posts={posts} /> */}
+                {/* <PostList posts={posts || []} /> */}
             </div>
             {isEditModalOpen && (
                 <EditProfileModal
