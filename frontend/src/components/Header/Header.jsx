@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import axios from 'axios';
 import { Link, useNavigate } from 'react-router-dom';
+import userApi from '../../api/userApi';
 import searchIcon from '../../assets/images/search.svg';
 import './Header.css';
 
@@ -14,28 +14,17 @@ const Header = () => {
     const [user, setUser] = useState(null);
     const navigate = useNavigate();
 
-    // Add the logic to determine the correct API base URL
-    const isLocalhost = window.location.hostname === "localhost";
-    const API_BASE = isLocalhost
-        ? process.env.REACT_APP_API_URL
-        : process.env.REACT_APP_API_URL_LAN;
-
     useEffect(() => {
         const fetchUser = async () => {
             const token = localStorage.getItem('token');
-            const ma_duong_dung = localStorage.getItem('userId');
             if (!token) {
                 navigate('/login');
                 return;
             }
 
             try {
-                // Use the correct API_BASE for the axios call
-                const res = await axios.get(`${API_BASE}/api/users/me`, {
-                    headers: { Authorization: `Bearer ${token}` },
-                    params: { ma_nguoi_dung: ma_duong_dung} 
-                });
-                setUser(res.data);
+                const userData = await userApi.getMe();
+                setUser(userData);
             } catch (err) {
                 console.error('Failed to fetch user data:', err);
                 // If the token is invalid or the API fails, log out the user
@@ -46,7 +35,7 @@ const Header = () => {
         };
 
         fetchUser();
-    }, [navigate, API_BASE]);
+    }, [navigate]);
 
     const handleLogout = () => {
         localStorage.removeItem('token');

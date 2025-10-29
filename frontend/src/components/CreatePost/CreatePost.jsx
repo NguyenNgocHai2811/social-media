@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import axios from 'axios';
+import userApi from '../../api/userApi';
+import postApi from '../../api/postApi';
 import './CreatePost.css';
 
 const CreatePost = ({ onClose, onPostCreated }) => {
@@ -11,15 +12,9 @@ const CreatePost = ({ onClose, onPostCreated }) => {
 
     useEffect(() => {
         const fetchUser = async () => {
-            const token = localStorage.getItem('token');
-               const ma_duong_dung = localStorage.getItem('userId');
-            if (!token) return;
             try {
-                const res = await axios.get('http://localhost:3001/api/users/me', {
-                    headers: { Authorization: `Bearer ${token}` },
-                     params: { ma_nguoi_dung: ma_duong_dung} 
-                });
-                setUser(res.data);
+                const userData = await userApi.getMe();
+                setUser(userData);
             } catch (err) {
                 console.error('Failed to fetch user data', err);
             }
@@ -48,16 +43,9 @@ const CreatePost = ({ onClose, onPostCreated }) => {
             formData.append('image', image);
         }
 
-        const token = localStorage.getItem('token');
-
         try {
-            const res = await axios.post('http://localhost:3001/api/posts', formData, {
-                headers: {
-                    'Content-Type': 'multipart/form-data',
-                    Authorization: `Bearer ${token}`
-                }
-            });
-            onPostCreated(res.data);
+            const newPost = await postApi.create(formData);
+            onPostCreated(newPost);
             onClose();
         } catch (err) {
             setError('Failed to create post. Please try again.');

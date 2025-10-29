@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import axios from 'axios';
+import userApi from '../../api/userApi';
 import './EditProfileModal.css';
 import defaultAvatar from '../../assets/images/default-avatar.jpg';
 
@@ -69,16 +69,9 @@ const EditProfileModal = ({ user, onClose, onProfileUpdate }) => {
             return;
         }
 
-        const token = localStorage.getItem('token');
-
         try {
-            const res = await axios.put('/api/users/me', formData, {
-                headers: {
-                    'Content-Type': 'multipart/form-data',
-                    Authorization: `Bearer ${token}`,
-                },
-            });
-            onProfileUpdate(res.data);
+            const updatedUser = await userApi.updateProfile(formData);
+            onProfileUpdate(updatedUser);
             onClose();
         } catch (err) {
             setError('Failed to update profile. Please try again.');

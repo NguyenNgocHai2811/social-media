@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import axios from 'axios';
+import postApi from '../../api/postApi';
 import Post from '../Post/Post';
 import './PostList.css';
 import './PostListTabs.css';
@@ -9,16 +9,11 @@ const PostList = ({ newPost }) => {
     const [error, setError] = useState('');
     const [activeTab, setActiveTab] = useState('Tất cả');
     
-   
-
     useEffect(() => {
         const fetchPosts = async () => {
-            const token = localStorage.getItem('token');
             try {
-                const res = await axios.get('http://localhost:3001/api/posts', {
-                    headers: { Authorization: `Bearer ${token}` }
-                });
-                setPosts(res.data);
+                const fetchedPosts = await postApi.getAll();
+                setPosts(fetchedPosts);
             } catch (err) {
                 setError('Failed to fetch posts.');
                 console.error(err);
