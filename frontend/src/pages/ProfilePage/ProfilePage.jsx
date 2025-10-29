@@ -17,8 +17,7 @@ const ProfilePage = () => {
     const [isEditModalOpen, setIsEditModalOpen] = useState(false);
 
     const token = localStorage.getItem('token');
-    const loggedInUserId = token ? jwtDecode(token).id : null;
-    
+    const loggedInUserId = token ? jwtDecode(token).ma_nguoi_dung : null;
 
     // Add the logic to determine the correct API base URL
     const isLocalhost = window.location.hostname === "localhost";
@@ -71,9 +70,38 @@ const ProfilePage = () => {
     return (
         <div className="profile-page">
             <Header />
-           <PostList posts={posts} />
-           </div>
-                   
+            <div className="profile-header">
+                <div className="cover-photo-container">
+                    <img src={user.anh_bia || defaultCover} alt="Cover" className="cover-photo" />
+                </div>
+                <div className="profile-info-container">
+                    <div className="profile-picture-container">
+                        <img src={user.anh_dai_dien || defaultAvatar} alt="Profile" className="profile-picture" />
+                    </div>
+                    <div className="profile-details">
+                        <h1 className="profile-name">{user.ten_hien_thi}</h1>
+                        <p className="profile-friend-count">{friendCount} bạn bè</p>
+                    </div>
+                    <div className="profile-actions">
+                        {isOwnProfile && (
+                            <button className="edit-profile-btn" onClick={() => setIsEditModalOpen(true)}>
+                                Chỉnh sửa trang cá nhân
+                            </button>
+                        )}
+                    </div>
+                </div>
+            </div>
+            <div className="profile-content">
+                {/* <PostList posts={posts} /> */}
+            </div>
+            {isEditModalOpen && (
+                <EditProfileModal
+                    user={user}
+                    onClose={() => setIsEditModalOpen(false)}
+                    onProfileUpdate={handleProfileUpdate}
+                />
+            )}
+        </div>
     );
 };
 
