@@ -1,6 +1,7 @@
 const jwt = require('jsonwebtoken');
 
 const verifyToken = (req, res, next) => {
+   
     const authHeader = req.headers.authorization;
     if (!authHeader) {
         return res.status(403).json({ message: 'A token is required for authentication' });
@@ -14,6 +15,7 @@ const verifyToken = (req, res, next) => {
     } catch (err) {
         return res.status(401).json({ message: 'Invalid Token' });
     }
+
     return next();
 };
 

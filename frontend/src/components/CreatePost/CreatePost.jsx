@@ -12,10 +12,12 @@ const CreatePost = ({ onClose, onPostCreated }) => {
     useEffect(() => {
         const fetchUser = async () => {
             const token = localStorage.getItem('token');
+               const ma_duong_dung = localStorage.getItem('userId');
             if (!token) return;
             try {
                 const res = await axios.get('http://localhost:3001/api/users/me', {
-                    headers: { Authorization: `Bearer ${token}` }
+                    headers: { Authorization: `Bearer ${token}` },
+                     params: { ma_nguoi_dung: ma_duong_dung} 
                 });
                 setUser(res.data);
             } catch (err) {

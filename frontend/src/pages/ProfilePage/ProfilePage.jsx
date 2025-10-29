@@ -71,54 +71,9 @@ const ProfilePage = () => {
     return (
         <div className="profile-page">
             <Header />
-            <div className="profile-container">
-                <div className="profile-header">
-                    <div className="profile-cover-photo">
-                        <img src={user.anh_bia || defaultCover} alt="Cover" />
-                    </div>
-                    <div className="profile-avatar">
-                        <img src={user.anh_dai_dien || defaultAvatar} alt="Avatar" />
-                    </div>
-                    <div className="profile-info-bar">
-                        <div className="profile-name-friends">
-                            <h1>{user.ten_hien_thi}</h1>
-                            <span>{friendCount} bạn bè</span>
-                        </div>
-                        <div className="profile-actions">
-                            {isOwnProfile && (
-                                <button className="edit-profile-btn" onClick={() => setIsEditModalOpen(true)}>
-                                    Chỉnh sửa trang cá nhân
-                                </button>
-                            )}
-                        </div>
-                    </div>
-                </div>
-
-                <div className="profile-content">
-                    <div className="profile-left-column">
-                        <div className="profile-intro box">
-                            <h2>Giới thiệu</h2>
-                            {user.gioi_thieu && <p>{user.gioi_thieu}</p>}
-                            <ul>
-                                {user.song_o_dau && <li>Sống tại <strong>{user.song_o_dau}</strong></li>}
-                                {user.tinh_trang_quan_he && <li><strong>{user.tinh_trang_quan_he}</strong></li>}
-                            </ul>
-                        </div>
-                    </div>
-                    <div className="profile-right-column">
-                        <PostList posts={posts} />
-                    </div>
-                </div>
-            </div>
-
-            {isEditModalOpen && (
-                <EditProfileModal 
-                    user={user}
-                    onClose={() => setIsEditModalOpen(false)}
-                    onProfileUpdate={handleProfileUpdate}
-                />
-            )}
-        </div>
+           <PostList posts={posts} />
+           </div>
+                   
     );
 };
 

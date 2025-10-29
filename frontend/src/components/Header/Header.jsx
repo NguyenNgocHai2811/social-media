@@ -23,6 +23,7 @@ const Header = () => {
     useEffect(() => {
         const fetchUser = async () => {
             const token = localStorage.getItem('token');
+            const ma_duong_dung = localStorage.getItem('userId');
             if (!token) {
                 navigate('/login');
                 return;
@@ -31,7 +32,8 @@ const Header = () => {
             try {
                 // Use the correct API_BASE for the axios call
                 const res = await axios.get(`${API_BASE}/api/users/me`, {
-                    headers: { Authorization: `Bearer ${token}` }
+                    headers: { Authorization: `Bearer ${token}` },
+                    params: { ma_nguoi_dung: ma_duong_dung} 
                 });
                 setUser(res.data);
             } catch (err) {
@@ -67,11 +69,11 @@ const Header = () => {
                     <input type="text" placeholder="Search ConnectF" />
                 </div>
             </div>
-            
+
             <div className="header-right">
                 <div className="header-nav">
                     <div className="nav-icon" title="Profile">
-                       <img src={userIcon} alt="user" />
+                        <img src={userIcon} alt="user" />
                     </div>
                     <div className="nav-icon" title="Messages">
                         <img src={iconChat} alt="chat" />
@@ -79,15 +81,15 @@ const Header = () => {
                     <div className="nav-icon" title="Notifications">
                         <img src={notification} alt="notification" />
                     </div>
-                     <div className="nav-icon" title="Logout" onClick={handleLogout}>
+                    <div className="nav-icon" title="Logout" onClick={handleLogout}>
                         <svg viewBox="0 0 24 24" width="24" height="24" fill="currentColor"><path d="M17 7l-1.41 1.41L18.17 11H8v2h10.17l-2.58 2.58L17 17l5-5zM4 5h8V3H4c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h8v-2H4V5z"></path></svg>
                     </div>
                 </div>
                 <Link to={`/profile/${user.ma_nguoi_dung}`} className="user-profile">
-                    <img 
-                        src={user.anh_dai_dien || defaultAvatar} 
-                        alt="avatar" 
-                        className="user-avatar" 
+                    <img
+                        src={user.anh_dai_dien || defaultAvatar}
+                        alt="avatar"
+                        className="user-avatar"
                     />
                     <span className="user-name">{user.ten_hien_thi}</span>
                 </Link>

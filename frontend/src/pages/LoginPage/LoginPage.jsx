@@ -13,7 +13,6 @@ const LoginPage = () => {
     const API_BASE = isLocalhost
         ? process.env.REACT_APP_API_URL
         : process.env.REACT_APP_API_URL_LAN;
-
     const handleSubmit = async (e) => {
         e.preventDefault();
         try {

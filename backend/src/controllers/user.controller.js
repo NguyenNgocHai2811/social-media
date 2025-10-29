@@ -4,8 +4,10 @@ const cloudinary = require('../config/cloudinary');
 
 // get profile of uesr the currently authenticated user
 const getMe = async (req, res) => {
+    console.log("ma nguoi dung",req)
     try {
-        const user = await userService.getUserById(req.userId);
+        
+        const user = await userService.getUserById(req.query.ma_nguoi_dung);
         res.status(200).json(user);
     } catch (error) {
         res.status(400).json({message: error.message});
