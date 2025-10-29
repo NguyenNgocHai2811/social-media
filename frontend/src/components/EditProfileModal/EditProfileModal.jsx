@@ -72,7 +72,7 @@ const EditProfileModal = ({ user, onClose, onProfileUpdate }) => {
         const token = localStorage.getItem('token');
 
         try {
-            const res = await axios.put('/api/users/me', formData, {
+            const res = await axios.put('http://localhost:3001/api/users/me', formData, {
                 headers: {
                     'Content-Type': 'multipart/form-data',
                     Authorization: `Bearer ${token}`,

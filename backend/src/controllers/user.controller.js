@@ -29,7 +29,7 @@ const updateUserProfile = async (req, res) => {
     try {
         // req.body will contain text fields
         // req.files will be an object with fields like 'avatar' and 'anh_bia'
-        const updatedUser = await userService.updateUserProfile(req.userId, req.body, req.files);
+        const updatedUser = await userService.updateUserProfile(req.user.ma_nguoi_dung, req.body, req.files);
         res.status(200).json(updatedUser);
     } catch (error) {
         // If the service fails, we should attempt to delete any files that were just uploaded
