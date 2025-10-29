@@ -17,18 +17,20 @@ const ProfilePage = () => {
     const [isEditModalOpen, setIsEditModalOpen] = useState(false);
 
     const token = localStorage.getItem('token');
-    const loggedInUserId = token ? jwtDecode(token).id : null;
-    
+    const loggedInUserId = token ? jwtDecode(token).ma_nguoi_dung : null;
 
-    // Add the logic to determine the correct API base URL
     const isLocalhost = window.location.hostname === "localhost";
     const API_BASE = isLocalhost
         ? process.env.REACT_APP_API_URL
         : process.env.REACT_APP_API_URL_LAN;
 
     const fetchProfileData = useCallback(async () => {
+        if (!token) {
+            setError("Authentication required.");
+            setIsLoading(false);
+            return;
+        }
         try {
-            // Use the correct API_BASE for the axios call
             const response = await axios.get(`${API_BASE}/api/users/${userId}`, {
                 headers: { Authorization: `Bearer ${token}` }
             });
@@ -61,19 +63,48 @@ const ProfilePage = () => {
         return <div className="error-message">{error}</div>;
     }
 
-    if (!profileData) {
+    if (!profileData || !profileData.user) {
         return <div>User not found.</div>;
     }
 
     const { user, posts, friendCount } = profileData;
-    const isOwnProfile = user.ma_nguoi_dung === loggedInUserId;
+    const isOwnProfile = user && loggedInUserId === user.ma_nguoi_dung;
 
     return (
         <div className="profile-page">
             <Header />
-           <PostList posts={posts} />
-           </div>
-                   
+            <div className="profile-header">
+                <div className="cover-photo-container">
+                    <img src={user.anh_bia || defaultCover} alt="Cover" className="cover-photo" />
+                </div>
+                <div className="profile-info-container">
+                    <div className="profile-picture-container">
+                        <img src={user.anh_dai_dien || defaultAvatar} alt="Profile" className="profile-picture" />
+                    </div>
+                    <div className="profile-details">
+                        <h1 className="profile-name">{user.ten_hien_thi}</h1>
+                        <p className="profile-friend-count">{friendCount || 0} bạn bè</p>
+                    </div>
+                    <div className="profile-actions">
+                        {isOwnProfile && (
+                            <button className="edit-profile-btn" onClick={() => setIsEditModalOpen(true)}>
+                                Chỉnh sửa trang cá nhân
+                            </button>
+                        )}
+                    </div>
+                </div>
+            </div>
+            <div className="profile-content">
+                {/* <PostList posts={posts || []} /> */}
+            </div>
+            {isEditModalOpen && (
+                <EditProfileModal
+                    user={user}
+                    onClose={() => setIsEditModalOpen(false)}
+                    onProfileUpdate={handleProfileUpdate}
+                />
+            )}
+        </div>
     );
 };
 
