@@ -2,7 +2,8 @@ const { getSession } = require('../config/neo4j');
 const { v4: uuidv4 } = require('uuid');
 
 const createPost = async (postData) => {
-    const { noi_dung, che_do_rieng_tu = 'cong_khai', ma_nguoi_dung, imagePath } = postData;
+    // Fix: Default noi_dung to empty string to prevent Neo4j driver error with undefined.
+    const { noi_dung = '', che_do_rieng_tu = 'cong_khai', ma_nguoi_dung, imageFile } = postData;
     const session = getSession();
     const transaction = session.beginTransaction();
     
@@ -10,63 +11,60 @@ const createPost = async (postData) => {
         const ma_bai_dang = uuidv4();
         const now = new Date().toISOString();
 
-        // Create the BaiDang node
-        const postResult = await transaction.run(
-            `CREATE (p:BaiDang {
+        // Optimization: Combine user matching, post creation, and relationship creation into one query.
+        const result = await transaction.run(
+            `MATCH (u:NguoiDung {ma_nguoi_dung: $ma_nguoi_dung})
+             CREATE (p:BaiDang {
                 ma_bai_dang: $ma_bai_dang,
                 noi_dung: $noi_dung,
                 che_do_rieng_tu: $che_do_rieng_tu,
                 ngay_tao: $now,
                 ngay_sua: $now
-            }) RETURN p`,
-            { ma_bai_dang, noi_dung, che_do_rieng_tu, now }
-        );
-        const newPost = postResult.records[0].get('p').properties;
-
-        // Create the relationship between User and Post
-        await transaction.run(
-            `MATCH (u:NguoiDung {ma_nguoi_dung: $ma_nguoi_dung})
-             MATCH (p:BaiDang {ma_bai_dang: $ma_bai_dang})
-             CREATE (u)-[:DANG_BAI {thoi_gian: $now}]->(p)`,
-            { ma_nguoi_dung, ma_bai_dang, now }
+             })
+             CREATE (u)-[:DANG_BAI {thoi_gian: $now}]->(p)
+             RETURN p, u`,
+            { ma_nguoi_dung, ma_bai_dang, noi_dung, che_do_rieng_tu, now }
         );
 
+        if (result.records.length === 0) {
+            throw new Error('User not found or post could not be created.');
+        }
+
+        const record = result.records[0];
+        const newPost = record.get('p').properties;
+        const user = record.get('u').properties;
+        
+        // Sanitize user data before attaching to the post object
+        delete user.mat_khau;
+        delete user.email;
+        newPost.user = user;
+        
         // Handle media (image) if it exists
-        if (imagePath) {
+        if (imageFile) {
             const ma_media = uuidv4();
+            // Optimization: Combine media creation and relationship creation into one query.
             const mediaResult = await transaction.run(
-                `CREATE (m:Media {
+                `MATCH (p:BaiDang {ma_bai_dang: $ma_bai_dang})
+                 CREATE (m:Media {
                     ma_media: $ma_media,
                     loai: 'anh',
-                    duong_dan: $imagePath,
+                    duong_dan: $imageUrl,
+                    public_id: $publicId,
                     ngay_tai_len: $now
-                }) RETURN m`,
-                { ma_media, imagePath, now }
-            );
-            
-            // Create the relationship between Post and Media
-            await transaction.run(
-                `MATCH (p:BaiDang {ma_bai_dang: $ma_bai_dang})
-                 MATCH (m:Media {ma_media: $ma_media})
-                 CREATE (p)-[:CO_MEDIA]->(m)`,
-                { ma_bai_dang, ma_media }
+                 })
+                 CREATE (p)-[:CO_MEDIA]->(m)
+                 RETURN m`,
+                { 
+                    ma_bai_dang,
+                    ma_media, 
+                    imageUrl: imageFile.path, 
+                    publicId: imageFile.filename,
+                    now 
+                }
             );
             newPost.media = mediaResult.records[0].get('m').properties;
         } else {
              newPost.media = null;
-        }
-
-        // Fetch user information to return with the post
-        const userResult = await transaction.run(
-            'MATCH (u:NguoiDung {ma_nguoi_dung: $ma_nguoi_dung}) RETURN u',
-            { ma_nguoi_dung }
-        );
-        
-        if (userResult.records.length > 0) {
-            const user = userResult.records[0].get('u').properties;
-            delete user.mat_khau; // Sanitize user data
-            delete user.email;
-            newPost.user = user;
         }
 
         await transaction.commit();

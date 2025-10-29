@@ -2,7 +2,8 @@ import React from 'react';
 import { BrowserRouter as Router, Route, Routes, Navigate } from 'react-router-dom';
 import LoginPage from './pages/LoginPage/LoginPage';
 import RegisterPage from './pages/RegisterPage/RegisterPage';
-import NewsFeed from './pages/NewsFeedPage/NewsFeed'
+import NewsFeed from './pages/NewsFeedPage/NewsFeed';
+import ProfilePage from './pages/ProfilePage/ProfilePage'; // Import the new ProfilePage
 
 // A simple check for authencation
 const isAuthenticated = () => {
@@ -24,6 +25,14 @@ function App() {
             element= {
               <PrivateRoute>
                 <NewsFeed/>
+              </PrivateRoute>
+            }
+          />
+           <Route 
+            path='/profile/:userId'
+            element= {
+              <PrivateRoute>
+                <ProfilePage/>
               </PrivateRoute>
             }
           />

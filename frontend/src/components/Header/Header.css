@@ -30,20 +30,24 @@
 
 .header-search .search-icon {
     position: absolute;
-    left: 15px;
+    right: 15px; /* Đặt icon sang bên phải */
     top: 50%;
     transform: translateY(-50%);
     color: #65676b;
+    cursor: pointer; /* Cho icon cảm giác có thể bấm được */
+    width: 20px;
+    height: 20px;
 }
 
 .header-search input {
     background-color: #f0f2f5;
     border: none;
-    border-radius: 20px;
-    padding: 10px 15px 10px 40px; /* Left padding for icon */
+    border-radius: 5px;
+    padding: 10px 40px 10px 15px; /* (Top, Right, Bottom, Left) - chừa chỗ bên phải cho icon */
     width: 240px;
     font-size: 15px;
 }
+
 
 .header-right {
     display: flex;
@@ -56,16 +60,21 @@
 }
 
 .header-nav .nav-icon {
-    font-size: 24px;
     color: #65676b;
-   
     border-radius: 50%;
-    width: 40px;
-    height: 40px;
+    width: 24px;
+    height: 24px;
     display: flex;
     align-items: center;
     justify-content: center;
-    cursor: pointer;
+    cursor: pointer; 
+}
+
+.header-nav .nav-icon img {
+    margin-left: 3px;
+    width: 23px;
+    height: 23px;
+    font-weight: 700;
 }
 
 
@@ -79,6 +88,18 @@
     width: 40px;
     height: 40px;
     border-radius: 50%;
+}
+
+.success-notification {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    background-color: #4CAF50;
+    color: white;
+    padding: 15px;
+    border-radius: 5px;
+    z-index: 1001;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.2);
 }
 
 /* Hiding elements that are now in sidebars */

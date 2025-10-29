@@ -18,6 +18,8 @@
 
 /* Phần thân bài post */
 .post-body {
+    display: flex;
+    justify-content: space-between;
     padding: 15px 20px;
 }
 
@@ -64,6 +66,7 @@
 .post-content a {
     color: #1e63ff;
     text-decoration: none;
+    padding: 15px 20px;
 }
 
 .post-content a:hover {
@@ -77,9 +80,13 @@
     gap: 25px;
     color: #555;
     font-size: 0.95rem;
-    border-top: 1px solid #e6e6e6;
     padding-top: 10px;
     margin-top: 10px;
+}
+
+.post-stats img{
+    width: 22px;
+    height: 22px;
 }
 
 .post-stats span {
