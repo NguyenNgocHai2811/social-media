@@ -1,45 +1,18 @@
-import React, { useState, useEffect } from 'react';
-import axios from 'axios';
+import React, { useState } from 'react';
 import Post from '../Post/Post';
 
-const PostList = ({ newPost }) => {
-    const [posts, setPosts] = useState([]);
+const PostList = ({ posts = [], userId }) => {
     const [error, setError] = useState('');
     const [activeTab, setActiveTab] = useState('Tất cả');
-    
-   
-
-    useEffect(() => {
-        const fetchPosts = async () => {
-            const token = localStorage.getItem('token');
-            try {
-                const res = await axios.get('http://localhost:3001/api/posts', {
-                    headers: { Authorization: `Bearer ${token}` }
-                });
-                setPosts(res.data);
-            } catch (err) {
-                setError('Failed to fetch posts.');
-                console.error(err);
-            }
-        };
-        fetchPosts();
-    }, []);
-
-    // Add new post to the top of the list when created
-    useEffect(() => {
-        if (newPost) {
-            setPosts(prevPosts => [newPost, ...prevPosts]);
-        }
-    }, [newPost]);
 
     if (error) {
-        return <p style={{ color: 'red' }}>{error}</p>;
+        return <p className="text-red-600 p-4">{error}</p>;
     }
 
     const tabs = ['Tất cả', 'Bạn bè', 'Gần đây', 'Phổ biến'];
 
     return (
-        <div className="flex-grow flex flex-col">
+        <div className="flex flex-col">
             <div className="bg-white rounded-t-lg border-b border-gray-200 p-4">
                 <div className="flex justify-between items-center">
                     <h3 className="m-0 text-lg font-bold">Bài viết</h3>
@@ -61,10 +34,14 @@ const PostList = ({ newPost }) => {
                     </div>
                 </div>
             </div>
-            <div className="overflow-y-auto flex-grow px-2">
-                {posts.map(post => (
-                    <Post key={post.ma_bai_dang} post={post} />
-                ))}
+            <div className="bg-white rounded-b-lg">
+                {posts.length === 0 ? (
+                    <p className="text-center py-10 text-gray-500">Chưa có bài viết nào</p>
+                ) : (
+                    posts.map(post => (
+                        <Post key={post.ma_bai_dang} post={post} />
+                    ))
+                )}
             </div>
         </div>
     );
