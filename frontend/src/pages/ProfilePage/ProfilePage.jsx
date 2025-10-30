@@ -9,6 +9,7 @@ import CreatePost from '../../components/CreatePost/CreatePost';
 import defaultAvatar from '../../assets/images/default-avatar.jpg';
 import defaultCover from '../../assets/images/default-avatar.jpg';
 import { jwtDecode } from "jwt-decode";
+import './ProfilePage.css';
 
 const ProfilePage = () => {
     const { userId } = useParams();
@@ -59,6 +60,8 @@ const ProfilePage = () => {
         }));
     };
 
+
+
     if (isLoading) {
         return <div className="flex items-center justify-center min-h-screen">Loading...</div>;
     }
@@ -77,8 +80,8 @@ const ProfilePage = () => {
     return (
         <div className="bg-gray-100 min-h-screen">
             <Header />
-            <div className="relative bg-white rounded-b-lg shadow-sm mb-5 max-w-[950px] mx-auto">
-                <div className="max-h-[400px] overflow-hidden rounded-b-lg">
+           <div className="relative bg-white rounded-b-lg shadow-sm mb-5 max-w-[950px] mx-auto z-20">
+              <div className="h-96 overflow-hidden rounded-b-lg">
                     <img src={user.anh_bia || defaultCover} alt="Cover" className="w-full h-full object-cover block" />
                 </div>
                 <div className="absolute bottom-0 left-0 right-0 flex items-end px-[30px] pb-5 bg-gradient-to-t from-black/60 to-transparent rounded-b-lg">
@@ -99,18 +102,18 @@ const ProfilePage = () => {
                 </div>
             </div>
 
-            {/* FIX: Layout đã được sửa lại */}
-            <div className="max-w-[950px] mx-auto px-5 flex gap-5 pb-10">
-                <div className="w-[35%]">
-                    <div className="sticky top-5">
+           <div className="profile-content-area relative z-10">
+                <div className="profile-left-column">
+                    <div className="sticky-content">
                         <Intro user={user} />
                     </div>
                 </div>
-                <div className="w-[65%]">
-                    <PostList postsFromProps={posts} userId={userId} />
+                <div className="profile-right-column">
+                   
+                    <PostList postsFromProps={posts} />
                 </div>
             </div>
-            
+
             {isEditModalOpen && (
                 <EditProfileModal
                     user={user}
