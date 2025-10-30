@@ -4,6 +4,8 @@ import axios from 'axios';
 import Header from '../../components/Header/Header';
 import PostList from '../../components/PostList/PostList';
 import EditProfileModal from '../../components/EditProfileModal/EditProfileModal';
+import Intro from '../../components/Intro/Intro';
+import CreatePost from '../../components/CreatePost/CreatePost';
 import './ProfilePage.css';
 import defaultAvatar from '../../assets/images/default-avatar.jpg';
 import defaultCover from '../../assets/images/default-avatar.jpg';
@@ -12,6 +14,7 @@ import { jwtDecode } from "jwt-decode";
 const ProfilePage = () => {
     const { userId } = useParams();
     const [profileData, setProfileData] = useState(null);
+    const [posts, setPosts] = useState([]);
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState('');
     const [isEditModalOpen, setIsEditModalOpen] = useState(false);
@@ -35,6 +38,8 @@ const ProfilePage = () => {
                 headers: { Authorization: `Bearer ${token}` }
             });
             setProfileData(response.data);
+            // Giả sử API cũng trả về bài đăng của người dùng, nếu không bạn cần fetch riêng
+            // setPosts(response.data.posts || []); 
         } catch (err) {
             setError('Failed to fetch profile data.');
             console.error(err);
@@ -55,6 +60,10 @@ const ProfilePage = () => {
         }));
     };
 
+    const handlePostCreated = (newPost) => {
+        setPosts(prePosts => [newPost, ...prePosts])
+    }
+
     if (isLoading) {
         return <div>Loading...</div>;
     }
@@ -67,7 +76,7 @@ const ProfilePage = () => {
         return <div>User not found.</div>;
     }
 
-    const { user, posts, friendCount } = profileData;
+    const { user, friendCount } = profileData;
     const isOwnProfile = user && loggedInUserId === user.ma_nguoi_dung;
 
     return (
@@ -94,8 +103,18 @@ const ProfilePage = () => {
                     </div>
                 </div>
             </div>
+            
+            {/* ĐÂY LÀ PHẦN NỘI DUNG CHÍNH, CHỈ CẦN MỘT .profile-content */}
             <div className="profile-content">
+                <div className="profile-left-sidebar">
+                    <Intro user={user} />
+                </div>
+                <div className="profile-main-content">
+                    {/* {isOwnProfile && <CreatePost onPostCreated={handlePostCreated} />} */}
+                    <PostList posts={posts} />
+                </div>
             </div>
+
             {isEditModalOpen && (
                 <EditProfileModal
                     user={user}
