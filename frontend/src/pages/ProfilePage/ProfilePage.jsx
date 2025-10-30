@@ -2,10 +2,9 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { useParams } from 'react-router-dom';
 import axios from 'axios';
 import Header from '../../components/Header/Header';
-import PostList from '../../components/PostList/PostList';
 import EditProfileModal from '../../components/EditProfileModal/EditProfileModal';
 import Intro from '../../components/Intro/Intro';
-import CreatePost from '../../components/CreatePost/CreatePost';
+import PostList from '../../components/PostList/PostList';
 import './ProfilePage.css';
 import defaultAvatar from '../../assets/images/default-avatar.jpg';
 import defaultCover from '../../assets/images/default-avatar.jpg';
@@ -109,12 +108,10 @@ const ProfilePage = () => {
                 <div className="profile-left-sidebar">
                     <Intro user={user} />
                 </div>
-                <div className="profile-main-content">
-                    {/* {isOwnProfile && <CreatePost onPostCreated={handlePostCreated} />} */}
-                    <PostList posts={posts} />
-                </div>
+                
             </div>
-
+            <PostList>
+                </PostList>     
             {isEditModalOpen && (
                 <EditProfileModal
                     user={user}

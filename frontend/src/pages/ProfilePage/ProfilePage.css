@@ -6,6 +6,7 @@
   min-height: 100vh;
 }
 
+
 /* Profile Header (Phần chính chứa ảnh bìa và thông tin) */
 .profile-header {
   position: relative; /* Đặt làm gốc cho các phần tử con được định vị tuyệt đối */
@@ -13,7 +14,7 @@
   border-radius: 0 0 8px 8px; /* Bo góc chỉ ở dưới */
   box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
   margin-bottom: 20px;
-  max-width: 950px; /* Giới hạn chiều rộng */
+ max-width: 950px; /* Giới hạn chiều rộng */
   margin-left: auto;
   margin-right: auto;
 }
@@ -112,6 +113,7 @@
 
 /* Nội dung bên dưới (bài đăng, v.v.) */
 .profile-content {
+
   max-width: 950px;
   margin: 0 auto;
   padding: 0 20px;
@@ -125,9 +127,7 @@
     align-self: flex-start;
 }
 
-.profile-main-content {
-    width: 65%;
-}
+
 /* Xử lý lỗi và tải */
 .error-message {
   color: red;
