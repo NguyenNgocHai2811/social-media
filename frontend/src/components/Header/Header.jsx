@@ -2,8 +2,6 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { Link, useNavigate } from 'react-router-dom';
 import searchIcon from '../../assets/images/search.svg';
-import './Header.css';
-
 // Icons
 import notification from '../../assets/images/notification.svg';
 import iconChat from '../../assets/images/comment.svg';
@@ -55,43 +53,43 @@ const Header = () => {
     };
 
     if (!user) {
-        return <header className="header"><div>Loading user...</div></header>;
+        return <header className="bg-white px-5 h-[60px] flex items-center"><div>Loading user...</div></header>;
     }
 
     return (
-        <header className="header">
-            <div className="header-left">
-                <Link to="/newsfeed" className="header-logo">
+        <header className="bg-white px-2.5 sm:px-5 h-[60px] flex items-center justify-between border-b border-gray-200 sticky top-0 z-[1000] shadow-sm">
+            <div className="flex items-center">
+                <Link to="/newsfeed" className="text-2xl md:text-3xl font-bold text-blue-600 mr-4 no-underline">
                     ConnectF
                 </Link>
-                <div className="header-search">
-                    <img src={searchIcon} alt="Search Icon" className="search-icon" />
-                    <input type="text" placeholder="Search ConnectF" />
+                <div className="relative hidden md:block">
+                    <img src={searchIcon} alt="Search Icon" className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5" />
+                    <input type="text" placeholder="Search ConnectF" className="bg-gray-100 border-none rounded-full py-2 pr-10 pl-4 w-60 text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none" />
                 </div>
             </div>
 
-            <div className="header-right">
-                <div className="header-nav">
-                    <div className="nav-icon" title="Profile">
-                        <img src={userIcon} alt="user" />
+            <div className="flex items-center gap-1 sm:gap-2">
+                <div className="flex items-center">
+                    <div className="flex items-center justify-center w-10 h-10 rounded-full cursor-pointer hover:bg-gray-200" title="Profile">
+                        <img src={userIcon} alt="user" className="w-6 h-6" />
                     </div>
-                    <div className="nav-icon" title="Messages">
-                        <img src={iconChat} alt="chat" />
+                    <div className="flex items-center justify-center w-10 h-10 rounded-full cursor-pointer hover:bg-gray-200" title="Messages">
+                        <img src={iconChat} alt="chat" className="w-6 h-6" />
                     </div>
-                    <div className="nav-icon" title="Notifications">
-                        <img src={notification} alt="notification" />
+                    <div className="flex items-center justify-center w-10 h-10 rounded-full cursor-pointer hover:bg-gray-200" title="Notifications">
+                        <img src={notification} alt="notification" className="w-6 h-6" />
                     </div>
-                    <div className="nav-icon" title="Logout" onClick={handleLogout}>
+                    <div className="flex items-center justify-center w-10 h-10 rounded-full text-gray-600 cursor-pointer hover:bg-gray-200" title="Logout" onClick={handleLogout}>
                         <svg viewBox="0 0 24 24" width="24" height="24" fill="currentColor"><path d="M17 7l-1.41 1.41L18.17 11H8v2h10.17l-2.58 2.58L17 17l5-5zM4 5h8V3H4c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h8v-2H4V5z"></path></svg>
                     </div>
                 </div>
-                <Link to={`/profile/${user.ma_nguoi_dung}`} className="user-profile">
+                <Link to={`/profile/${user.ma_nguoi_dung}`} className="flex items-center cursor-pointer no-underline text-gray-800 p-1 rounded-md hover:bg-gray-200">
                     <img
                         src={user.anh_dai_dien || defaultAvatar}
                         alt="avatar"
-                        className="user-avatar"
+                        className="w-8 h-8 rounded-full"
                     />
-                    <span className="user-name">{user.ten_hien_thi}</span>
+                    <span className="ml-2 font-medium hidden sm:inline">{user.ten_hien_thi}</span>
                 </Link>
             </div>
         </header>

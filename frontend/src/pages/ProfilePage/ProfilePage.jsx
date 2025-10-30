@@ -4,16 +4,19 @@ import axios from 'axios';
 import Header from '../../components/Header/Header';
 import PostList from '../../components/PostList/PostList';
 import EditProfileModal from '../../components/EditProfileModal/EditProfileModal';
-import './ProfilePage.css';
+import Intro from '../../components/Intro/Intro';
+import CreatePost from '../../components/CreatePost/CreatePost';
 import defaultAvatar from '../../assets/images/default-avatar.jpg';
 import defaultCover from '../../assets/images/default-avatar.jpg';
 import { jwtDecode } from "jwt-decode";
+import './ProfilePage.css';
 
 const ProfilePage = () => {
     const { userId } = useParams();
     const [profileData, setProfileData] = useState(null);
+    const [posts, setPosts] = useState([]);
     const [isLoading, setIsLoading] = useState(true);
-    const [error, setError] = useState('');
+    const [error, setError] = useState(''); // FIX: Đã thêm error state
     const [isEditModalOpen, setIsEditModalOpen] = useState(false);
 
     const token = localStorage.getItem('token');
@@ -30,11 +33,14 @@ const ProfilePage = () => {
             setIsLoading(false);
             return;
         }
+        setIsLoading(true);
         try {
             const response = await axios.get(`${API_BASE}/api/users/${userId}`, {
                 headers: { Authorization: `Bearer ${token}` }
             });
+            console.log(response)
             setProfileData(response.data);
+            setPosts(response.data.posts || []);
         } catch (err) {
             setError('Failed to fetch profile data.');
             console.error(err);
@@ -42,9 +48,8 @@ const ProfilePage = () => {
             setIsLoading(false);
         }
     }, [userId, token, API_BASE]);
-
+   
     useEffect(() => {
-        setIsLoading(true);
         fetchProfileData();
     }, [fetchProfileData]);
 
@@ -55,48 +60,60 @@ const ProfilePage = () => {
         }));
     };
 
+
+
     if (isLoading) {
-        return <div>Loading...</div>;
+        return <div className="flex items-center justify-center min-h-screen">Loading...</div>;
     }
 
     if (error) {
-        return <div className="error-message">{error}</div>;
+        return <div className="flex items-center justify-center min-h-screen text-red-600">{error}</div>;
     }
 
     if (!profileData || !profileData.user) {
-        return <div>User not found.</div>;
+        return <div className="flex items-center justify-center min-h-screen">User not found.</div>;
     }
 
-    const { user, posts, friendCount } = profileData;
+    const { user, friendCount } = profileData;
     const isOwnProfile = user && loggedInUserId === user.ma_nguoi_dung;
 
     return (
-        <div className="profile-page">
+        <div className="bg-gray-100 min-h-screen">
             <Header />
-            <div className="profile-header">
-                <div className="cover-photo-container">
-                    <img src={user.anh_bia || defaultCover} alt="Cover" className="cover-photo" />
+           <div className="relative bg-white rounded-b-lg shadow-sm mb-5 max-w-[950px] mx-auto z-20">
+              <div className="h-96 overflow-hidden rounded-b-lg">
+                    <img src={user.anh_bia || defaultCover} alt="Cover" className="w-full h-full object-cover block" />
                 </div>
-                <div className="profile-info-container">
-                    <div className="profile-picture-container">
-                        <img src={user.anh_dai_dien || defaultAvatar} alt="Profile" className="profile-picture" />
+                <div className="absolute bottom-0 left-0 right-0 flex items-end px-[30px] pb-5 bg-gradient-to-t from-black/60 to-transparent rounded-b-lg">
+                    <div className="mr-4 -translate-y-2.5">
+                        <img src={user.anh_dai_dien || defaultAvatar} alt="Profile" className="w-[70px] h-[70px] rounded-full border-4 border-white shadow-md object-cover" />
                     </div>
-                    <div className="profile-details">
-                        <h1 className="profile-name">{user.ten_hien_thi}</h1>
-                        <p className="profile-friend-count">{friendCount || 0} bạn bè</p>
+                    <div className="flex flex-col mb-[15px] flex-grow justify-center">
+                        <h1 className="text-white text-3xl font-bold m-0 [text-shadow:1px_1px_3px_rgba(0,0,0,0.7)]">{user.ten_hien_thi}</h1>
+                        <p className="text-white text-base mt-1 [text-shadow:1px_1px_3px_rgba(0,0,0,0.7)]">{friendCount || 0} bạn bè</p>
                     </div>
-                    <div className="profile-actions">
+                    <div className="ml-auto mb-[15px]">
                         {isOwnProfile && (
-                            <button className="edit-profile-btn" onClick={() => setIsEditModalOpen(true)}>
+                            <button className="bg-slate-100 text-black py-2.5 px-[15px] rounded-md font-bold cursor-pointer transition-colors duration-300 hover:bg-gray-300" onClick={() => setIsEditModalOpen(true)}>
                                 Chỉnh sửa trang cá nhân
                             </button>
                         )}
                     </div>
                 </div>
             </div>
-            <div className="profile-content">
-                {/* <PostList posts={posts || []} /> */}
+
+           <div className="profile-content-area relative z-10">
+                <div className="profile-left-column">
+                    <div className="sticky-content">
+                        <Intro user={user} />
+                    </div>
+                </div>
+                <div className="profile-right-column">
+                   
+                    <PostList posts={posts} userId = {userId}/>
+                </div>
             </div>
+
             {isEditModalOpen && (
                 <EditProfileModal
                     user={user}

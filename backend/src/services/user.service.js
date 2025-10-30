@@ -43,7 +43,7 @@ const getUserProfileWithPosts = async (userId) => {
         // Step 2: Get user's posts
         const postsResult = await session.run(
             `
-            MATCH (author:NguoiDung {ma_nguoi_dung: $userId})-[r:DA_DANG]->(post:BaiDang)
+            MATCH (author:NguoiDung {ma_nguoi_dung: $userId})-[r:DANG_BAI]->(post:BaiDang)
             OPTIONAL MATCH (post)-[:CO_MEDIA]->(media:Media)
             RETURN post, media, author
             ORDER BY post.thoi_gian_dang DESC
@@ -60,7 +60,7 @@ const getUserProfileWithPosts = async (userId) => {
             return {
                 ...post,
                 media: media ? media.properties : null,
-                tac_gia: author
+                user: author
             };
         });
 
