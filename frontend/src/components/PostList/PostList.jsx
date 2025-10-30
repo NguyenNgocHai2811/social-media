@@ -1,12 +1,53 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import axios from 'axios';
 import Post from '../Post/Post';
 
-const PostList = ({ posts = [], userId }) => {
+const PostList = ({ userId, newPost }) => {
+    const [posts, setPosts] = useState([]);
+    const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
     const [activeTab, setActiveTab] = useState('Tất cả');
 
+    const isLocalhost = window.location.hostname === "localhost";
+    const API_BASE = isLocalhost
+        ? process.env.REACT_APP_API_URL
+        : process.env.REACT_APP_API_URL_LAN;
+
+    useEffect(() => {
+        const fetchPosts = async () => {
+            setLoading(true);
+            try {
+                const token = localStorage.getItem('token');
+                if (!token) {
+                    setError('Authentication token not found.');
+                    return;
+                }
+                const response = await axios.get(`${API_BASE}/api/posts`, {
+                    headers: { Authorization: `Bearer ${token}` }
+                });
+                setPosts(response.data);
+            } catch (err) {
+                setError('Failed to fetch posts.');
+                console.error(err);
+            } finally {
+                setLoading(false);
+            }
+        };
+        fetchPosts();
+    }, [userId]);
+
+    useEffect(() => {
+        if (newPost) {
+            setPosts(prevPosts => [newPost, ...prevPosts]);
+        }
+    }, [newPost]);
+
+    if (loading) {
+        return <p className="text-center py-10">Loading posts...</p>;
+    }
+
     if (error) {
-        return <p className="text-red-600 p-4">{error}</p>;
+        return <p className="text-red-600 p-4 text-center">{error}</p>;
     }
 
     const tabs = ['Tất cả', 'Bạn bè', 'Gần đây', 'Phổ biến'];
