@@ -110,7 +110,7 @@ const ProfilePage = () => {
                 </div>
                 <div className="profile-right-column">
                    
-                    <PostList postsFromProps={posts} />
+                    <PostList posts={posts} userId = {userId}/>
                 </div>
             </div>
 

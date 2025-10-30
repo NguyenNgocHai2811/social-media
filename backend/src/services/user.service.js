@@ -60,7 +60,7 @@ const getUserProfileWithPosts = async (userId) => {
             return {
                 ...post,
                 media: media ? media.properties : null,
-                tac_gia: author
+                user: author
             };
         });
 
