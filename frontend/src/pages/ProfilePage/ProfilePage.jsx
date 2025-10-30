@@ -95,7 +95,6 @@ const ProfilePage = () => {
                 </div>
             </div>
             <div className="profile-content">
-                {/* <PostList posts={posts || []} /> */}
             </div>
             {isEditModalOpen && (
                 <EditProfileModal
