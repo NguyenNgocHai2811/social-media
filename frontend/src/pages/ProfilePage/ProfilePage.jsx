@@ -106,7 +106,7 @@ const ProfilePage = () => {
                     </div>
                 </div>
                 <div className="w-[65%]">
-                    <PostList postsFromProps={posts} userId={userId} />
+                    {/* <PostList postsFromProps={posts} userId={userId} /> */}
                 </div>
             </div>
             
