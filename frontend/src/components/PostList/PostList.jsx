@@ -1,8 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import Post from '../Post/Post';
-import './PostList.css';
-import './PostListTabs.css';
 
 const PostList = ({ newPost }) => {
     const [posts, setPosts] = useState([]);
@@ -41,22 +39,29 @@ const PostList = ({ newPost }) => {
     const tabs = ['Tất cả', 'Bạn bè', 'Gần đây', 'Phổ biến'];
 
     return (
-        <div className="post-list-container">
-            <div className="post-list-header">
-                <h3>Bài viết</h3>
-                <div className="post-list-tabs">
-                    {tabs.map(tab => (
-                        <button
-                            key={tab}
-                            className={`tab-button ${activeTab === tab ? 'active' : ''}`}
-                            onClick={() => setActiveTab(tab)}
-                        >
-                            {tab}
-                        </button>
-                    ))}
+        <div className="flex-grow flex flex-col">
+            <div className="bg-white rounded-t-lg border-b border-gray-200 p-4">
+                <div className="flex justify-between items-center">
+                    <h3 className="m-0 text-lg font-bold">Bài viết</h3>
+                    <div className="flex gap-5">
+                        {tabs.map(tab => (
+                            <button
+                                key={tab}
+                                className={`bg-transparent border-none py-2 px-1 text-base font-semibold cursor-pointer relative transition-colors duration-300 ${
+                                    activeTab === tab ? 'text-blue-600' : 'text-gray-500 hover:text-blue-500'
+                                }`}
+                                onClick={() => setActiveTab(tab)}
+                            >
+                                {tab}
+                                {activeTab === tab && (
+                                    <span className="absolute bottom-[-17px] left-0 right-0 h-1 bg-blue-600"></span>
+                                )}
+                            </button>
+                        ))}
+                    </div>
                 </div>
             </div>
-            <div className="post-list">
+            <div className="overflow-y-auto flex-grow px-2">
                 {posts.map(post => (
                     <Post key={post.ma_bai_dang} post={post} />
                 ))}
