@@ -8,6 +8,10 @@ const RegisterPage = () => {
     const [mat_khau, setPassword] = useState('');
     const [confirmPassword, setConfirmPassword] = useState('');
     const navigate = useNavigate();
+    const isLocalhost = window.location.hostname === "localhost";
+    const API_BASE = isLocalhost
+        ? process.env.REACT_APP_API_URL
+        : process.env.REACT_APP_API_URL_LAN;
 
     const handleSubmit = async (e) => {
         e.preventDefault();
@@ -16,7 +20,7 @@ const RegisterPage = () => {
             return;
         }
         try {
-            const response = await fetch('http://localhost:3001/api/auth/register', {
+            const response = await fetch(`${API_BASE}/api/auth/register`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -43,35 +47,43 @@ const RegisterPage = () => {
             <div className="register-box">
                 <h1 className="register-title">Create new account</h1>
                 <form onSubmit={handleSubmit}>
+                    
                     <input
+                        id="ten_hien_thi"
                         type="text"
                         placeholder="Tên đăng nhập"
                         value={ten_hien_thi}
                         onChange={(e) => setUsername(e.target.value)}
                         required
                     />
+                    
                     <input
+                        id="email"
                         type="email"
                         placeholder="Email"
                         value={email}
                         onChange={(e) => setEmail(e.target.value)}
                         required
                     />
+                   
                     <input
+                        id="mat_khau"
                         type="password"
                         placeholder="Mật khẩu"
                         value={mat_khau}
                         onChange={(e) => setPassword(e.target.value)}
                         required
                     />
+                    
                     <input
+                        id="confirmPassword"
                         type="password"
                         placeholder="Xác nhận mật khẩu"
                         value={confirmPassword}
                         onChange={(e) => setConfirmPassword(e.target.value)}
                         required
                     />
-                    <button type="submit" className="register-button">Đăng ký</button>
+                    <button type="submit" className="register-button">Register</button>
                 </form>
                 <div className="register-links">
                     <Link to="/login">Đã có tài khoản?</Link>
