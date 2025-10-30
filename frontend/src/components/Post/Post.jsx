@@ -18,35 +18,41 @@ const Post = ({ post }) => {
 
     return (
         <div className="bg-white rounded-lg shadow-md my-4 border border-gray-200">
-            <div className="p-4">
-                <div className="flex items-center mb-4">
-                    <img src={userAvatar} alt="user avatar" className="w-11 h-11 rounded-full object-cover" />
-                    <div className="ml-3">
-                        <span className="font-semibold text-base text-gray-800">{userName}</span>
-                        <span className="block text-sm text-gray-500">{new Date(ngay_tao).toLocaleString()}</span>
-                    </div>
-                </div>
-                {noi_dung && <p className="text-gray-700 leading-relaxed mb-4">{noi_dung}</p>}
-            </div>
+
 
             {isImageMedia && (
                 <div className="border-t border-gray-200">
                     {renderMedia()}
                 </div>
             )}
+            <div className="flex items-center mb-4 justify-between">
 
-            <div className="px-4 py-2">
-                <div className="flex justify-between items-center text-gray-600">
-                    <div className="flex items-center gap-1.5">
-                        <img src={heartIcon} alt="heart" className="w-5 h-5" />
-                        <span>{so_luot_thich || 0}</span>
-                    </div>
-                    <div className="flex items-center gap-1.5">
-                         <span>{so_luot_binh_luan || 0}</span>
-                         <img src={commentIcon} alt="comment" className="w-5 h-5" />
+                <div className="ml-3 flex mt-6 ">
+                    <img src={userAvatar} alt="user avatar" className="w-11 h-11 rounded-full object-cover" />
+                    <div className="pl-2">
+                        <span className="font-semibold text-base text-gray-800">{userName}</span>
+                        <span className="block text-sm text-gray-500">{new Date(ngay_tao).toLocaleString()}</span>
                     </div>
                 </div>
+                <div className="px-4 py-2 text-center">
+                    <div className="flex justify-between items-center text-gray-600">
+                        <div className="flex items-center gap-1.5">
+                            <img src={heartIcon} alt="heart" className="w-5 h-5" />
+                            <span>{so_luot_thich || 0}</span>
+                        </div>
+                        <div className="flex items-center gap-1.5 ml-6">
+                            <img src={commentIcon} alt="comment" className="w-5 h-5" />
+                            <span>{so_luot_binh_luan || 0}</span>
+                        </div>
+                    </div>
+                </div>
+
             </div>
+            <div className="p-4">
+                {noi_dung && <p className="text-gray-700 leading-relaxed mb-4">{noi_dung}</p>}
+            </div>
+
+
 
             <div className="border-t border-gray-200 flex justify-around py-1">
                 <button className="flex-1 text-center py-2 text-gray-700 font-medium hover:bg-gray-100 rounded-md transition-all">Like</button>
