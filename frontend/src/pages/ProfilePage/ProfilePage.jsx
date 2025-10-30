@@ -94,7 +94,7 @@ const ProfilePage = () => {
                     </div>
                     <div className="ml-auto mb-[15px]">
                         {isOwnProfile && (
-                            <button className="bg-gray-200 text-black py-2.5 px-[15px] rounded-md font-bold cursor-pointer transition-colors duration-300 hover:bg-gray-300" onClick={() => setIsEditModalOpen(true)}>
+                            <button className="bg-slate-100 text-black py-2.5 px-[15px] rounded-md font-bold cursor-pointer transition-colors duration-300 hover:bg-gray-300" onClick={() => setIsEditModalOpen(true)}>
                                 Chỉnh sửa trang cá nhân
                             </button>
                         )}

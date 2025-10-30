@@ -17,7 +17,6 @@ flex-shrink: 0;
 flex-grow: 0;
 /* CỐ ĐỊNH CHIỀU CAO VÀ CHO PHÉP CUỘN */
 height: calc(100vh - 524px);
-overflow-y: auto;
 }
 
 .profile-left-column .sticky-content {
@@ -33,5 +32,4 @@ overflow-y: auto;
 min-width: 0;
  /* CỐ ĐỊNH CHIỀU CAO VÀ CHO PHÉP CUỘN */
  height: calc(100vh - 524px);
- overflow-y: auto;
 }
