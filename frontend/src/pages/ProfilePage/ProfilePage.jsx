@@ -31,11 +31,14 @@ const ProfilePage = () => {
             setIsLoading(false);
             return;
         }
+        setIsLoading(true);
         try {
             const response = await axios.get(`${API_BASE}/api/users/${userId}`, {
                 headers: { Authorization: `Bearer ${token}` }
             });
+            console.log(response)
             setProfileData(response.data);
+            setPosts(response.data.posts || []);
         } catch (err) {
             setError('Failed to fetch profile data.');
             console.error(err);
@@ -43,38 +46,10 @@ const ProfilePage = () => {
             setIsLoading(false);
         }
     }, [userId, token, API_BASE]);
-
-    // FIX: Fetch bài viết của user cụ thể
-    const fetchUserPosts = useCallback(async () => {
-        if (!token || !userId) return;
-        
-        try {
-            const response = await axios.get(`${API_BASE}/api/posts/user/${userId}`, {
-                headers: { Authorization: `Bearer ${token}` }
-            });
-            setPosts(response.data);
-        } catch (err) {
-            console.error('Failed to fetch user posts:', err);
-            // Nếu API không có endpoint này, bạn có thể filter từ tất cả posts
-            try {
-                const allPostsResponse = await axios.get(`${API_BASE}/api/posts`, {
-                    headers: { Authorization: `Bearer ${token}` }
-                });
-                const userPosts = allPostsResponse.data.filter(
-                    post => post.ma_nguoi_dung === parseInt(userId)
-                );
-                setPosts(userPosts);
-            } catch (filterErr) {
-                console.error('Failed to filter posts:', filterErr);
-            }
-        }
-    }, [userId, token, API_BASE]);
-
+   
     useEffect(() => {
-        setIsLoading(true);
         fetchProfileData();
-        fetchUserPosts();
-    }, [fetchProfileData, fetchUserPosts]);
+    }, [fetchProfileData]);
 
     const handleProfileUpdate = (updatedUser) => {
         setProfileData(prevData => ({
@@ -131,7 +106,7 @@ const ProfilePage = () => {
                     </div>
                 </div>
                 <div className="w-[65%]">
-                    <PostList posts={posts} userId={userId} />
+                    <PostList postsFromProps={posts} userId={userId} />
                 </div>
             </div>
             

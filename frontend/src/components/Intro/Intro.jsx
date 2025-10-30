@@ -17,7 +17,7 @@ const Intro = ({ user }) => {
                 {user.tinh_trang_quan_he && (
                     <li>
                         <FaHeart className="icon" />
-                        <span>{user.tinh_trang_quan_he}</span>
+                        <span> {user.tinh_trang_quan_he}</span>
                     </li>
                 )}
             </ul>

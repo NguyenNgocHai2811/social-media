@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import Post from '../Post/Post';
 
-const PostList = ({ userId, newPost }) => {
+const PostList = ({ userID, newPost, posts: postsFromProps }) => {
     const [posts, setPosts] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
@@ -14,7 +14,7 @@ const PostList = ({ userId, newPost }) => {
         : process.env.REACT_APP_API_URL_LAN;
 
     useEffect(() => {
-        const fetchPosts = async () => {
+        const fetchAllPosts = async () => {
             setLoading(true);
             try {
                 const token = localStorage.getItem('token');
@@ -33,8 +33,14 @@ const PostList = ({ userId, newPost }) => {
                 setLoading(false);
             }
         };
-        fetchPosts();
-    }, [userId]);
+
+        if (postsFromProps) {
+            setPosts(postsFromProps);
+            setLoading(false);
+        } else {
+            fetchAllPosts();
+        }
+    }, [postsFromProps, API_BASE]);
 
     useEffect(() => {
         if (newPost) {
