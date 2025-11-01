@@ -5,6 +5,7 @@ const { getSession } = require('./config/neo4j');
 const authRoutes = require('./routes/auth.route')
 const postRoutes = require('./routes/post.route');
 const userRoutes = require('./routes/user.route');
+const friendRoutes = require('./routes/friend.routes');
 const app = express();
 const port = process.env.PORT || 3001;
 
@@ -19,6 +20,7 @@ app.use('/uploads',express.static('uploads'));
 app.use('/api/auth', authRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api/posts', postRoutes);
+app.use('/api/friends', friendRoutes);
 //route
 app.get('/', (req, res) => {
   res.send('Hello from the backend!');
