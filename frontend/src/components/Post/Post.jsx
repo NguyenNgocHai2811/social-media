@@ -1,4 +1,5 @@
 import React from 'react';
+import {Link} from 'react-router-dom';
 import heartIcon from '../../assets/images/heart.svg';
 import commentIcon from '../../assets/images/comment.svg';
 import ShareIcon from '../../assets/images/share.svg';
@@ -28,9 +29,13 @@ const Post = ({ post }) => {
             <div className="flex items-center mb-4 justify-between">
 
                 <div className="ml-3 flex mt-6 ">
+                    <Link to={`/profile/${user?.ma_nguoi_dung}`}>
                     <img src={userAvatar} alt="user avatar" className="w-11 h-11 rounded-full object-cover" />
+                    </Link>
                     <div className="pl-2">
-                        <span className="font-semibold text-base text-gray-800">{userName}</span>
+                          <Link to={`/profile/${user?.ma_nguoi_dung}`}>
+                            <span className="font-semibold text-base text-gray-800 hover:underline">{userName}</span>
+                        </Link>
                         <span className="block text-sm text-gray-500">{new Date(ngay_tao).toLocaleString()}</span>
                     </div>
                 </div>

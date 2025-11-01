@@ -3,7 +3,8 @@ import { BrowserRouter as Router, Route, Routes, Navigate } from 'react-router-d
 import LoginPage from './pages/LoginPage/LoginPage';
 import RegisterPage from './pages/RegisterPage/RegisterPage';
 import NewsFeed from './pages/NewsFeedPage/NewsFeed';
-import ProfilePage from './pages/ProfilePage/ProfilePage'; // Import the new ProfilePage
+import ProfilePage from './pages/ProfilePage/ProfilePage'; 
+import FriendRequestsPage from './pages/FriendRequestPage/FriendRequestPage';
 
 // A simple check for authencation
 const isAuthenticated = () => {
@@ -25,6 +26,14 @@ function App() {
             element= {
               <PrivateRoute>
                 <NewsFeed/>
+              </PrivateRoute>
+            }
+          />
+           <Route 
+            path='/friend-requests'
+            element= {
+              <PrivateRoute>
+                <FriendRequestsPage />
               </PrivateRoute>
             }
           />

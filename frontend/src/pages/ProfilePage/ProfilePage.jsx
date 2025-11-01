@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { useParams } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import Header from '../../components/Header/Header';
 import PostList from '../../components/PostList/PostList';
@@ -18,6 +18,8 @@ const ProfilePage = () => {
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState(''); // FIX: Đã thêm error state
     const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+    const [friendshipStatus, setFriendshipStatus] = useState(null);
+    const navigate = useNavigate();
 
     const token = localStorage.getItem('token');
     const loggedInUserId = token ? jwtDecode(token).ma_nguoi_dung : null;
@@ -35,23 +37,55 @@ const ProfilePage = () => {
         }
         setIsLoading(true);
         try {
-            const response = await axios.get(`${API_BASE}/api/users/${userId}`, {
+            const profileResponse = await axios.get(`${API_BASE}/api/users/${userId}`, {
                 headers: { Authorization: `Bearer ${token}` }
             });
-            console.log(response)
-            setProfileData(response.data);
-            setPosts(response.data.posts || []);
+            setProfileData(profileResponse.data);
+            setPosts(profileResponse.data.posts || []);
+
+            if (loggedInUserId !== userId) {
+                const statusResponse = await axios.get(`${API_BASE}/api/friends/status/${userId}`, {
+                    headers: { Authorization: `Bearer ${token}` }
+                });
+                setFriendshipStatus(statusResponse.data.status);
+            }
         } catch (err) {
             setError('Failed to fetch profile data.');
             console.error(err);
         } finally {
             setIsLoading(false);
         }
-    }, [userId, token, API_BASE]);
+    }, [userId, token, API_BASE, loggedInUserId]);
    
     useEffect(() => {
         fetchProfileData();
     }, [fetchProfileData]);
+
+    const handleFriendAction = async (action) => {
+        try {
+            switch (action) {
+                case 'add_friend':
+                    await axios.post(`${API_BASE}/api/friends/request/${userId}`, {}, { headers: { Authorization: `Bearer ${token}` } });
+                    setFriendshipStatus('request_sent');
+                    break;
+                case 'cancel_request':
+                    await axios.delete(`${API_BASE}/api/friends/request/${userId}`, { headers: { Authorization: `Bearer ${token}` } });
+                    setFriendshipStatus('not_friends');
+                    break;
+                case 'unfriend':
+                    await axios.delete(`${API_BASE}/api/friends/unfriend/${userId}`, { headers: { Authorization: `Bearer ${token}` } });
+                    setFriendshipStatus('not_friends');
+                    break;
+                case 'respond_request':
+                    navigate('/friend-requests');
+                    break;
+                default:
+                    break;
+            }
+        } catch (err) {
+            console.error("Friend action failed", err);
+        }
+    };
 
     const handleProfileUpdate = (updatedUser) => {
         setProfileData(prevData => ({
@@ -93,10 +127,33 @@ const ProfilePage = () => {
                         <p className="text-white text-base mt-1 [text-shadow:1px_1px_3px_rgba(0,0,0,0.7)]">{friendCount || 0} bạn bè</p>
                     </div>
                     <div className="ml-auto mb-[15px]">
-                        {isOwnProfile && (
+                        {isOwnProfile ? (
                             <button className="bg-slate-100 text-black py-2.5 px-[15px] rounded-md font-bold cursor-pointer transition-colors duration-300 hover:bg-gray-300" onClick={() => setIsEditModalOpen(true)}>
                                 Chỉnh sửa trang cá nhân
                             </button>
+                        ) : (
+                            <>
+                                {friendshipStatus === 'not_friends' && (
+                                    <button className="bg-blue-500 text-white py-2.5 px-[15px] rounded-md font-bold cursor-pointer transition-colors duration-300 hover:bg-blue-600" onClick={() => handleFriendAction('add_friend')}>
+                                        Thêm bạn bè
+                                    </button>
+                                )}
+                                {friendshipStatus === 'request_sent' && (
+                                    <button className="bg-gray-500 text-white py-2.5 px-[15px] rounded-md font-bold cursor-pointer transition-colors duration-300 hover:bg-gray-600" onClick={() => handleFriendAction('cancel_request')}>
+                                        Đã gửi lời mời
+                                    </button>
+                                )}
+                                {friendshipStatus === 'request_received' && (
+                                    <button className="bg-green-500 text-white py-2.5 px-[15px] rounded-md font-bold cursor-pointer transition-colors duration-300 hover:bg-green-600" onClick={() => handleFriendAction('respond_request')}>
+                                        Phản hồi lời mời
+                                    </button>
+                                )}
+                                {friendshipStatus === 'friends' && (
+                                    <button className="bg-red-500 text-white py-2.5 px-[15px] rounded-md font-bold cursor-pointer transition-colors duration-300 hover:bg-red-600" onClick={() => handleFriendAction('unfriend')}>
+                                        Hủy kết bạn
+                                    </button>
+                                )}
+                            </>
                         )}
                     </div>
                 </div>
