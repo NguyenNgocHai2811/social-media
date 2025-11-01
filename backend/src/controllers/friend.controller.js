@@ -62,6 +62,15 @@ const unFriendUser = async (req ,res )=>{
         res.status(500).json({message: err.message});
     }
 }
+
+const getFriends = async (req,res )=>{
+    try {
+        const friends = await friendService.getFriends(req.user.ma_nguoi_dung);
+        res.json(friends)
+    } catch(err){
+        res.status(500).json({message: err.message});
+    }
+}
 module.exports = {
     getFriendshipStatus,
     getFriendRequest,
@@ -69,5 +78,6 @@ module.exports = {
     cancelFriendRequest,
     acceptFriendRequest,
     rejectFriendRequest,
-    unFriendUser
+    unFriendUser,
+    getFriends
 }

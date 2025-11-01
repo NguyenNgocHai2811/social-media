@@ -24,6 +24,8 @@ router.delete('reject/:userId',authMiddleware.verifyToken, friendController.reje
 // unfriend user
 router.delete('/unfriend/:userId',authMiddleware.verifyToken,friendController.unFriendUser);
 
+//get friends list 
+router.get('/friends',authMiddleware.verifyToken, friendController.getFriends);
 
 
 module.exports = router;
