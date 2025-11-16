@@ -27,8 +27,21 @@ const getAllPosts = async (req, res) => {
         res.status(500).json({ message: error.message });
     }
 };
+const likePost = async (req, res) => {
+    try {
+        const userId = req.user.ma_nguoi_dung;
+        const postId = req.params.id // id từ bài viết trên url
 
+        const result =  await postService.likePost(userId, postId)
+        console.log('like result: ', result)
+        res.json({message: result});
+
+    }catch(error){
+        res.status(500).json({message: error.message})
+    }
+}
 module.exports = {
     createPost,
     getAllPosts,
+    likePost
 };

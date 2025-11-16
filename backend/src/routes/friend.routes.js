@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const friendController = require('../controllers/friend.controller');
 const authMiddleware = require('../middleware/auth.middleware');
+const { searchFriendUser } = require('../services/friend.service');
 
 // get friendship status
 router.get('/status/:userId',authMiddleware.verifyToken, friendController.getFriendshipStatus);
@@ -24,6 +25,8 @@ router.delete('reject/:userId',authMiddleware.verifyToken, friendController.reje
 // unfriend user
 router.delete('/unfriend/:userId',authMiddleware.verifyToken,friendController.unFriendUser);
 
+// search username
 
+router.post('/search', authMiddleware.verifyToken, friendController.searchFriendUser);
 
 module.exports = router;

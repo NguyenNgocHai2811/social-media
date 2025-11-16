@@ -62,6 +62,25 @@ const unFriendUser = async (req ,res )=>{
         res.status(500).json({message: err.message});
     }
 }
+
+// search friend
+const searchFriendUser = async(req, res) => {
+    try {
+        const { keyword} = req.body;
+        const currentUserId = req.user.ma_nguoi_dung;
+        console.log(keyword)
+        if (!keyword){
+            return res.status(400).json({message: 'vui long nhap ten can tim'});
+        }
+
+        const user = await friendService.searchFriendUser(currentUserId, keyword);
+        res.json(user);
+    }catch (err) {
+        res.status(500).json({message: err.message});
+    }
+}
+
+
 module.exports = {
     getFriendshipStatus,
     getFriendRequest,
@@ -69,5 +88,6 @@ module.exports = {
     cancelFriendRequest,
     acceptFriendRequest,
     rejectFriendRequest,
-    unFriendUser
+    unFriendUser,
+    searchFriendUser
 }

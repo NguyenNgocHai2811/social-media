@@ -109,7 +109,48 @@ const getAllPosts = async () => {
     }
 };
 
+const likePost = async(userId, postId) => {
+    const session = getSession()
+    try {
+         const checkResult = await session.run(
+            `
+            MATCH (u:User {ma_nguoi_dung: $userId})-[l:LIKE]->(p:BaiDang {ma_bai_dang: $postId})
+            RETURN l
+            `,
+            { userId, postId }
+        );
+
+           if (checkResult.records.length > 0) {
+            // Đã like → unlike (xóa relationship)
+            await session.run(
+                `
+                MATCH (u:User {ma_nguoi_dung: $userId})-[l:LIKE]->(p:BaiDang {ma_bai_dang: $postId})
+                DELETE l
+                `,
+                { userId, postId }
+            );
+            return { message: 'Unliked' };
+             } 
+             else {
+                // Chưa like → like (tạo relationship)
+                await session.run(
+                    `
+                    MATCH (u:User {ma_nguoi_dung: $userId})
+                    MATCH (p:BaiDang {ma_bai_dang: $postId})
+                    CREATE (u)-[:LIKE]->(p)
+                    `,
+                    { userId, postId }
+                );
+                return { message: 'Liked' };
+             }
+
+    }finally {
+        await session.close();
+    } 
+}
+
 module.exports = {
     createPost,
     getAllPosts,
+    likePost
 };

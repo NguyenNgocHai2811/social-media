@@ -6,4 +6,5 @@ const { uploadPostImage } = require('../middleware/upload.middleware');
 
 router.get('/', authMiddleware.verifyToken, postController.getAllPosts);
 router.post('/',authMiddleware.verifyToken, uploadPostImage.single('image'), postController.createPost);
+router.post('/:id/like', authMiddleware.verifyToken, postController.likePost);
 module.exports = router;
