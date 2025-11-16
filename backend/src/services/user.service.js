@@ -45,7 +45,7 @@ const getUserProfileWithPosts = async (userId) => {
             `
             MATCH (author:NguoiDung {ma_nguoi_dung: $userId})-[r:DANG_BAI]->(post:BaiDang)
             OPTIONAL MATCH (post)-[:CO_MEDIA]->(media:Media)
-            WITH post, media, author, size((post)-[:CO_BINH_LUAN]->(:BinhLuan)) as so_luot_binh_luan
+            WITH post, media, author, COUNT { (post)-[:CO_BINH_LUAN]->(:BinhLuan) } as so_luot_binh_luan
             RETURN post, media, author, so_luot_binh_luan
             ORDER BY post.ngay_tao DESC
             `,
