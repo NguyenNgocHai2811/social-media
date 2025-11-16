@@ -45,8 +45,9 @@ const getUserProfileWithPosts = async (userId) => {
             `
             MATCH (author:NguoiDung {ma_nguoi_dung: $userId})-[r:DANG_BAI]->(post:BaiDang)
             OPTIONAL MATCH (post)-[:CO_MEDIA]->(media:Media)
-            RETURN post, media, author
-            ORDER BY post.thoi_gian_dang DESC
+            WITH post, media, author, size((post)-[:CO_BINH_LUAN]->(:BinhLuan)) as so_luot_binh_luan
+            RETURN post, media, author, so_luot_binh_luan
+            ORDER BY post.ngay_tao DESC
             `,
             { userId }
         );
@@ -55,8 +56,11 @@ const getUserProfileWithPosts = async (userId) => {
             const post = record.get('post').properties;
             const media = record.get('media');
             const author = record.get('author').properties;
+            const count_comment = record.get('so_luot_binh_luan');
             delete author.mat_khau;
             delete author.email;
+
+            post.so_luot_binh_luan = count_comment;
             return {
                 ...post,
                 media: media ? media.properties : null,

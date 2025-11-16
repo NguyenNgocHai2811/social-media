@@ -6,6 +6,7 @@ const authRoutes = require('./routes/auth.route')
 const postRoutes = require('./routes/post.route');
 const userRoutes = require('./routes/user.route');
 const friendRoutes = require('./routes/friend.routes');
+const commentRoutes = require('./routes/comment.route')
 const app = express();
 const port = process.env.PORT || 3001;
 
@@ -21,6 +22,7 @@ app.use('/api/auth', authRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api/posts', postRoutes);
 app.use('/api/friends', friendRoutes);
+app.use('/api/comments', commentRoutes);
 //route
 app.get('/', (req, res) => {
   res.send('Hello from the backend!');
