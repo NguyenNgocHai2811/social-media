@@ -84,7 +84,9 @@ const getAllPosts = async () => {
         const result = await session.run(
             `MATCH (u:NguoiDung)-[:DANG_BAI]->(p:BaiDang)
              OPTIONAL MATCH (p)-[:CO_MEDIA]->(m:Media)
-             RETURN p, u, m
+              // Đếm số lượng bình luận cho mỗi bài đăng
+             WITH p, u, m, size((p)-[:CO_BINH_LUAN]->(:BinhLuan)) as so_luot_binh_luan
+             RETURN p, u, m, so_luot_binh_luan
              ORDER BY p.ngay_tao DESC`
         );
 
@@ -92,10 +94,11 @@ const getAllPosts = async () => {
             const post = record.get('p').properties;
             const user = record.get('u').properties;
             const media = record.get('m') ? record.get('m').properties : null;
-            
+               const so_luot_binh_luan = record.get('so_luot_binh_luan').toNumber();
             // Sanitize user data
             delete user.mat_khau;
             delete user.email; // Or any other private fields
+            post.so_luot_binh_luan = so_luot_binh_luan;
 
             return { ...post, user, media };
         });
