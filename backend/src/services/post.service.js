@@ -1,5 +1,5 @@
 const { getSession } = require('../config/neo4j');
-const { v4: uuidv4 } = require('uuid');
+const { v4: uuidv4 } = require('uuid'); //
 
 const createPost = async (postData) => {
     // Fix: Default noi_dung to empty string to prevent Neo4j driver error with undefined.
@@ -147,6 +147,24 @@ const likePost = async(userId, postId) => {
     }finally {
         await session.close();
     } 
+}
+
+// xoá bài viết
+const deletePost = async(userId, postId) => {
+    const session = getSession()
+    try {
+        const result = await session.run(`
+            Match (:NguoiDung {ma_nguoi_dung: $userId}) -[:Dang_Bai] ->(post:BaiDang {ma_bai_dang: $postId})
+            Detach delete post;
+            `,
+            {userId, postId}
+        )
+
+    }catch(err){
+        console.error(err)
+    }finally {
+        await session.close();
+    }
 }
 
 module.exports = {

@@ -1,4 +1,5 @@
 const driver = require('../config/neo4j');
+
 const getFriendshipStatus = async (currentUserId, otherUserId) => {
     const session = driver.getSession();
     try {
