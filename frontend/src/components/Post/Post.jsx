@@ -1,16 +1,25 @@
-import React from 'react';
+import React, {useState} from 'react';
 import {Link} from 'react-router-dom';
 import heartIcon from '../../assets/images/heart.svg';
 import commentIcon from '../../assets/images/comment.svg';
-import ShareIcon from '../../assets/images/share.svg';
 import defaultAvatar from '../../assets/images/default-avatar.jpg';
-
+import CommentList from '../Comment/CommentList';
 const Post = ({ post }) => {
-    const { user, noi_dung, media, ngay_tao, so_luot_thich, so_luot_binh_luan } = post;
-
+    
+    const [showComments, setShowComments] = useState(false);
+    const [countComment, setCountComment] = useState(post.so_luot_binh_luan ||0);
+    const { user, noi_dung, media, ngay_tao, so_luot_thich} = post;
     const renderMedia = () => {
         if (!media || !media.duong_dan) return null;
         return <img src={media.duong_dan} alt="Post content" className="w-full block" />;
+    };
+
+    const toggleComments = () => {
+        setShowComments(!showComments);
+    }
+    // Hàm callback để cập nhật số lượng bình luận từ CommentList
+    const handleCommentCountChange = (newCount) => {
+        setCountComment(newCount);
     };
 
     const isImageMedia = media && media.loai === 'anh' && media.duong_dan;
@@ -19,8 +28,6 @@ const Post = ({ post }) => {
 
     return (
         <div className="bg-white rounded-lg shadow-md my-4 border border-gray-200">
-
-
             {isImageMedia && (
                 <div className="border-t border-gray-200">
                     {renderMedia()}
@@ -47,7 +54,7 @@ const Post = ({ post }) => {
                         </div>
                         <div className="flex items-center gap-1.5 ml-6">
                             <img src={commentIcon} alt="comment" className="w-5 h-5" />
-                            <span>{so_luot_binh_luan || 0}</span>
+                            <span>{countComment || 0}</span>
                         </div>
                     </div>
                 </div>
@@ -61,13 +68,16 @@ const Post = ({ post }) => {
 
             <div className="border-t border-gray-200 flex justify-around py-1">
                 <button className="flex-1 text-center py-2 text-gray-700 font-medium hover:bg-gray-100 rounded-md transition-all">Like</button>
-                <button className="flex-1 text-center py-2 text-gray-700 font-medium hover:bg-gray-100 rounded-md transition-all">Comment</button>
+                <button onClick={toggleComments} className='flex-1 text-center py-2 text-gray-700 font-medium hover:bg-gray-100 rounded-md transition-all'>Comment</button>
                 <button className="flex-1 text-center py-2 text-gray-700 font-medium hover:bg-gray-100 rounded-md transition-all">Share</button>
             </div>
-
-            <div className="border-t border-gray-200 p-3">
-                <input type="text" placeholder="Viết bình luận..." className="w-full border-none rounded-full bg-gray-100 py-2 px-4 text-sm outline-none transition-shadow focus:ring-2 focus:ring-blue-300" />
-            </div>
+             {showComments && (
+                <div className="border-t border-gray-200">
+                    <CommentList postId={post.ma_bai_dang} 
+                                  onCommentCountChange={handleCommentCountChange} 
+                                  initialCommentCount={countComment}/>
+                </div>
+            )}
         </div>
     );
 };

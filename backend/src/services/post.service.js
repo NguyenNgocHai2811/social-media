@@ -83,19 +83,22 @@ const getAllPosts = async () => {
     try {
         const result = await session.run(
             `MATCH (u:NguoiDung)-[:DANG_BAI]->(p:BaiDang)
-             OPTIONAL MATCH (p)-[:CO_MEDIA]->(m:Media)
-             RETURN p, u, m
-             ORDER BY p.ngay_tao DESC`
+            OPTIONAL MATCH (p)-[:CO_MEDIA]->(m:Media)
+            // Đếm số lượng bình luận cho mỗi bài đăng
+            WITH p, u, m, COUNT { (p)-[:CO_BINH_LUAN]->(:BinhLuan) } as so_luot_binh_luan
+            RETURN p, u, m, so_luot_binh_luan
+            ORDER BY p.ngay_tao DESC`
         );
 
         const posts = result.records.map(record => {
             const post = record.get('p').properties;
             const user = record.get('u').properties;
             const media = record.get('m') ? record.get('m').properties : null;
-            
+            const so_luot_binh_luan = record.get('so_luot_binh_luan');
             // Sanitize user data
             delete user.mat_khau;
             delete user.email; // Or any other private fields
+            post.so_luot_binh_luan = so_luot_binh_luan;
 
             return { ...post, user, media };
         });
@@ -109,66 +112,92 @@ const getAllPosts = async () => {
     }
 };
 
-const likePost = async(userId, postId) => {
-    const session = getSession()
+const toggleLikePost = async (userId, postId) => {
+    const session = getSession();
     try {
-         const checkResult = await session.run(
+        // Chỉ cần MỘT lần session.run
+        const result = await session.run(
             `
-            MATCH (u:User {ma_nguoi_dung: $userId})-[l:LIKE]->(p:BaiDang {ma_bai_dang: $postId})
-            RETURN l
+            // 1. Tìm người dùng và bài viết
+            MATCH (u:NguoiDung {ma_nguoi_dung: $userId})
+            MATCH (p:BaiDang {ma_bai_dang: $postId})
+            
+            // 2. "Chìa khóa": Thử tìm [LIKE] (nếu có)
+            // Dùng OPTIONAL MATCH để nếu không tìm thấy, 'l' sẽ là NULL
+            // và câu lệnh vẫn tiếp tục (không bị lỗi)
+            OPTIONAL MATCH (u)-[l:LIKE]->(p)
+            
+            
+            // "IF l IS NOT NULL THEN..." (Nếu đã like -> thì xóa 'l')
+            FOREACH (ignoreMe IN CASE WHEN l IS NOT NULL THEN [1] ELSE [] END |
+                DELETE l
+            )
+            
+            // "IF l IS NULL THEN..." (Nếu chưa like -> thì tạo mới)
+            FOREACH (ignoreMe IN CASE WHEN l IS NULL THEN [1] ELSE [] END |
+                CREATE (u)-[k:LIKE {created_at: timestamp()}]->(p)
+            )
+            RETURN CASE WHEN l IS NOT NULL THEN 'Unliked' ELSE 'Liked' END AS action
             `,
             { userId, postId }
         );
 
-           if (checkResult.records.length > 0) {
-            // Đã like → unlike (xóa relationship)
-            await session.run(
-                `
-                MATCH (u:User {ma_nguoi_dung: $userId})-[l:LIKE]->(p:BaiDang {ma_bai_dang: $postId})
-                DELETE l
-                `,
-                { userId, postId }
-            );
-            return { message: 'Unliked' };
-             } 
-             else {
-                // Chưa like → like (tạo relationship)
-                await session.run(
-                    `
-                    MATCH (u:User {ma_nguoi_dung: $userId})
-                    MATCH (p:BaiDang {ma_bai_dang: $postId})
-                    CREATE (u)-[:LIKE]->(p)
-                    `,
-                    { userId, postId }
-                );
-                return { message: 'Liked' };
-             }
+        // 5. Lấy kết quả từ câu lệnh RETURN
+        //    (Nó sẽ là 'Liked' hoặc 'Unliked' tùy thuộc vào
+        //     trạng thái CŨ của 'l' là gì)
+        if (result.records.length > 0) {
+            const action = result.records[0].get('action');
+            return { message: action };
+        } else {
+            // Điều này không nên xảy ra nếu userId và postId là đúng
+            throw new Error("User or Post not found.");
+        }
 
-    }finally {
-        await session.close();
-    } 
+    } catch (err) {
+        console.error("Error toggling like:", err);
+        return { error: err.message }; // Trả về lỗi
+    } finally {
+        if (session) {
+            await session.close();
+        }
+    }
 }
 
 // xoá bài viết
-const deletePost = async(userId, postId) => {
-    const session = getSession()
+const deletePost = async (userId, postId) => {
+    const session = getSession();
     try {
-        const result = await session.run(`
-            Match (:NguoiDung {ma_nguoi_dung: $userId}) -[:Dang_Bai] ->(post:BaiDang {ma_bai_dang: $postId})
-            Detach delete post;
+        const result = await session.run(
+            `
+            MATCH (:NguoiDung {ma_nguoi_dung: $userId}) -[:DANG_BAI]-> (post:BaiDang {ma_bai_dang: $postId})
+            DETACH DELETE post
             `,
-            {userId, postId}
-        )
+            { userId, postId }
+        );
 
-    }catch(err){
-        console.error(err)
-    }finally {
-        await session.close();
+      const nodesDeleted = result.summary.counters.updates().nodesDeleted;
+
+        if (nodesDeleted > 0) {
+             console.log(`>>> THÀNH CÔNG: Đã xoá ${nodesDeleted} bài viết.`);
+             return true;
+        } else {
+            console.log(`>>> THẤT BẠI: Không tìm thấy bài viết hoặc người dùng không khớp.`);
+            return false;
+        }
+    } catch (err) {
+        console.error("Error in deletePost service:", err);
+        throw err;
+    } finally {
+        if (session) {
+            await session.close();
+        }
     }
 }
 
 module.exports = {
     createPost,
     getAllPosts,
-    likePost
+    toggleLikePost,
+    deletePost
+
 };

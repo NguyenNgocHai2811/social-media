@@ -118,6 +118,27 @@ const unFriendUser = async (currentUserId, otherUserId) =>{
     }
 };
 
+const getFriends = async (userId) =>{
+    const session = driver.getSession();
+    try {
+        const result = await session.run(
+            `
+            MATCH (u:NguoiDung {ma_nguoi_dung: $userId})-[:IS_FRIENDS_WITH]-(friend:NguoiDung)
+            RETURN friend.ma_nguoi_dung AS ma_nguoi_dung, friend.ten_hien_thi AS ten_hien_thi, friend.anh_dai_dien AS anh_dai_dien
+            `,
+            { userId }
+        );
+        return result.records.map(record => ({
+            ma_nguoi_dung: record.get('ma_nguoi_dung'),
+            ten_hien_thi: record.get('ten_hien_thi'),
+            anh_dai_dien: record.get('anh_dai_dien')
+        }));
+    }
+    finally{
+        await session.close()
+    }
+}
+
 const searchFriendUser = async (currentUserId, keyword) => {
     const session = driver.getSession();
     try {
@@ -153,5 +174,6 @@ module.exports = {
     acceptFriendRequest,
     rejectFriendRequest,
     unFriendUser,
-    searchFriendUser
+    searchFriendUser,
+    getFriends
 }
