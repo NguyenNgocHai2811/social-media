@@ -153,6 +153,74 @@ const getAllPosts = async (currentUserId = null) => {
     }
 };
 
+const getPostsByUserId = async (currentUserId, targetUserId) => {
+    const session = getSession();
+    try {
+        const safeUserId = currentUserId || '';
+
+        const query = `
+            // 1. Tìm User mục tiêu và các bài đăng của họ
+            MATCH (u:NguoiDung {ma_nguoi_dung: $targetUserId})-[:DANG_BAI]->(p:BaiDang)
+            
+            // 2. Lấy Media (nếu có)
+            OPTIONAL MATCH (p)-[:CO_MEDIA]->(m:Media)
+            
+            // 3. Đếm Like tổng
+            OPTIONAL MATCH (p)<-[l:LIKE]-()
+            WITH p, u, m, count(l) as so_luot_like
+
+            // 4. Đếm Comment tổng
+            OPTIONAL MATCH (p)-[:CO_BINH_LUAN]->(bl:BinhLuan)
+            WITH p, u, m, so_luot_like, count(bl) as so_luot_binh_luan
+
+            // 5. QUAN TRỌNG: Kiểm tra xem người đang xem (currentUserId) có like bài này không
+            OPTIONAL MATCH (me:NguoiDung {ma_nguoi_dung: $safeUserId})-[my_like:LIKE]->(p)
+
+            RETURN p, u, m, so_luot_like, so_luot_binh_luan,
+                   CASE WHEN my_like IS NOT NULL THEN true ELSE false END as da_like
+            ORDER BY p.ngay_tao DESC
+        `;
+
+        const result = await session.run(query, { targetUserId, safeUserId });
+
+        return result.records.map(record => {
+            const post = record.get('p').properties;
+            const user = record.get('u').properties;
+            const media = record.get('m') ? record.get('m').properties : null;
+
+            // Hàm convert số (copy từ getAllPosts xuống cho an toàn)
+            const toNativeNumber = (val) => {
+                if (val === null || val === undefined) return 0;
+                if (typeof val === 'number') return val;
+                if (val.low !== undefined) return val.toNumber();
+                return 0;
+            };
+
+            const so_luot_like = toNativeNumber(record.get('so_luot_like'));
+            const so_luot_binh_luan = toNativeNumber(record.get('so_luot_binh_luan'));
+            const da_like = record.get('da_like'); // Đã check quan hệ với currentUserId
+
+            if (user) {
+                delete user.mat_khau;
+                delete user.email;
+            }
+
+            return {
+                ...post,
+                user, // Thông tin người đăng (targetUser)
+                media,
+                so_luot_like,
+                so_luot_binh_luan,
+                da_like // Trạng thái chính xác
+            };
+        });
+
+    } finally {
+        await session.close();
+    }
+};
+
+
 const toggleLikePost = async (userId, postId) => {
     const session = getSession();
     try {
@@ -248,5 +316,6 @@ module.exports = {
     createPost,
     getAllPosts,
     toggleLikePost,
-    deletePost
+    deletePost,
+    getPostsByUserId
 };

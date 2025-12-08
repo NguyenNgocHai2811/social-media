@@ -32,6 +32,23 @@ const getAllPosts = async (req, res) => {
         res.status(500).json({ message: error.message });
     }
 };
+
+const getPostsByUser = async (req, res) => {
+    try {
+        // ID của người đang xem (lấy từ token)
+        const currentUserId = req.user ? req.user.ma_nguoi_dung : null;
+
+        // ID của profile đang xem (lấy từ URL)
+        const targetUserId = req.params.userId;
+
+        const posts = await postService.getPostsByUserId(currentUserId, targetUserId);
+        res.status(200).json(posts);
+    } catch (error) {
+        console.error("Error getting user posts:", error);
+        res.status(500).json({ message: error.message });
+    }
+};
+
 const likePost = async (req, res) => {
     try {
         const userId = req.user.ma_nguoi_dung;
@@ -70,5 +87,6 @@ module.exports = {
     createPost,
     getAllPosts,
     likePost,
-    deletePost
+    deletePost,
+    getPostsByUser
 };
