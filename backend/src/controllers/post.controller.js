@@ -31,37 +31,55 @@ const getAllPosts = async (req, res) => {
 const likePost = async (req, res) => {
     try {
         const userId = req.user.ma_nguoi_dung;
-        const postId = req.params.id // id từ bài viết trên url
-        console.log(req.user)   
-        const result =  await postService.toggleLikePost(userId, postId)
-        console.log("userId:", userId, "postId:", postId);
-        console.log('like result: ', result)
-        return res.json({message: result.message});
-    }catch(error){
-        res.status(500).json({message: error.message})
+        const postId = req.params.id;
+
+        const result = await postService.toggleLikePost(userId, postId);
+
+        if (result.error) {
+            return res.status(404).json({
+                success: false,
+                message: result.error
+            });
+        }
+
+        res.json({
+            success: true,
+            message: result.message,
+            data: { action: result.message }
+        });
+    } catch (error) {
+        res.status(500).json({
+            success: false,
+            message: error.message
+        });
     }
-}
+};
 
 const deletePost = async(req, res) => {
-    try{
+    try {
         const userId = req.user.ma_nguoi_dung;
-        const postId = req.params.id
-        
-        const wasDeleted = await postService.deletePost(userId, postId)
-        console.log('UserId', userId, 'postId', postId);
-        // console.log('Delete result:', result)
+        const postId = req.params.id;
+
+        const wasDeleted = await postService.deletePost(userId, postId);
+
         if (wasDeleted) {
-                // Xóa thành công
-                return res.status(200).json({ message: 'Post deleted successfully' });
+            return res.json({
+                success: true,
+                message: "Bài viết đã được xóa thành công"
+            });
         } else {
-            // Không tìm thấy bài viết hoặc không có quyền
-            // (Vì MATCH không tìm thấy gì)
-            return res.status(403).json({ message: 'Post not found or user not authorized' });
+            return res.status(403).json({
+                success: false,
+                message: "Bài viết không tồn tại hoặc bạn không có quyền xóa"
+            });
         }
-    }catch(error){
-        res.status(500).json({message: error.message})
+    } catch (error) {
+        res.status(500).json({
+            success: false,
+            message: error.message
+        });
     }
-}
+};
 module.exports = {
     createPost,
     getAllPosts,

@@ -1,0 +1,34 @@
+const express = require('express');
+const adminController = require('../controllers/admin.controller');
+const { verifyAdmin } = require('../middleware/admin.middeware');
+const { verifyToken } = require('../middleware/auth.middleware');
+
+const router = express.Router();
+
+router.use(verifyToken); // Xác thực token
+router.use(verifyAdmin); // Xác thực quyền admin
+
+
+// Lấy tất cả thống kê cùng lúc
+router.get('/stats', adminController.getOverviewStats);
+
+// Lấy tất cả thống kê riêng lẻ
+router.get('/stats/users', adminController.getTotalUsers);
+router.get('/stats/posts', adminController.getTotalPosts);
+router.get('/stats/interactions', adminController.getTotalInteractions);
+router.get('/stats/new-users', adminController.getNewUsersLast30Days);
+
+
+// Lấy danh sách tất cả người dùng
+router.get('/users', adminController.getAllUsers);
+
+// Tìm kiếm người dùng 
+router.get('/users/search', adminController.searchUsers);
+
+// Lấy danh sách người dùng đang hoạt động 
+router.get('/users/active', adminController.getActiveUsers);
+
+// Khóa/Mở khóa người dùng
+router.put('/users/:userId/status', adminController.toggleUserStatus);
+
+module.exports = router;
