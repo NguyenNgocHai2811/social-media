@@ -64,8 +64,9 @@ const getAllPosts = async (req, res) => {
     try {
         // Lấy ID user nếu đã đăng nhập, nếu chưa thì là null
         const currentUserId = req.user ? req.user.ma_nguoi_dung : null;
+        const { filter } = req.query;
 
-        const posts = await postService.getAllPosts(currentUserId);
+        const posts = await postService.getAllPosts(currentUserId, filter);
         res.status(200).json(posts);
     } catch (error) {
         console.error("Controller Error:", error.message); // Log lỗi controller
@@ -75,9 +76,11 @@ const getAllPosts = async (req, res) => {
 
 const getPostsByUser = async (req, res) => {
     try {
-        const { filter } = req.query;
-        const userId = req.user.ma_nguoi_dung;
-        const posts = await postService.getAllPosts(userId, filter);
+        const { userId } = req.params; // Lấy userId từ params thay vì req.user
+        const currentUserId = req.user ? req.user.ma_nguoi_dung : null;
+        
+        // Gọi hàm getAllPosts với tham số thứ 3 là targetUserId
+        const posts = await postService.getAllPosts(currentUserId, null, userId);
         res.status(200).json(posts);
     } catch (error) {
         console.error("Error getting user posts:", error);
@@ -91,6 +94,40 @@ const likePost = async (req, res) => {
         const postId = req.params.id;
 
         const result = await postService.toggleLikePost(userId, postId);
+
+        // Notify if like action (not unlike)
+        if (result.success && result.liked) {
+            try {
+                const authorId = await postService.getPostAuthorId(postId);
+                
+                // Only notify if liker is not the author
+                if (authorId && authorId !== userId) {
+                    const notification = await notificationService.createNotification({
+                        recipientId: authorId,
+                        senderId: userId,
+                        type: 'LIKE',
+                        content: `${req.user.ten_hien_thi} đã thích bài viết của bạn`,
+                        relatedId: postId
+                    });
+
+                    // Enrich notification with sender info for real-time display
+                    const notificationWithSender = {
+                        ...notification,
+                        sender: {
+                            ma_nguoi_dung: userId,
+                            ten_hien_thi: req.user.ten_hien_thi,
+                            anh_dai_dien: req.user.anh_dai_dien
+                        }
+                    };
+
+                    const io = getIO();
+                    io.to(authorId).emit('newNotification', notificationWithSender);
+                }
+            } catch (notifError) {
+                console.error("Failed to send like notification:", notifError);
+                // Don't fail the request if notifications fail
+            }
+        }
 
         // Trả về cả trạng thái lẫn số lượng mới
         return res.json(result);

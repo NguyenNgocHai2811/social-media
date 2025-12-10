@@ -78,7 +78,7 @@ const createPost = async (postData) => {
     }
 };
 
-const getAllPosts = async (userId, filter) => {
+const getAllPosts = async (userId, filter, targetUserId = null) => {
     const session = getSession();
     try {
         // Đảm bảo userId không bị null/undefined khi query (để tránh lỗi query)
@@ -89,7 +89,12 @@ const getAllPosts = async (userId, filter) => {
         let limitClause = "";
 
         // 1. XÂY DỰNG MATCH CLAUSE DỰA TRÊN FILTER
-        if (filter === 'friends') {
+        if (targetUserId) {
+             // Lấy bài viết của một user cụ thể (Profile)
+             matchClause = `
+                MATCH (u:NguoiDung {ma_nguoi_dung: $targetUserId})-[:DANG_BAI]->(p:BaiDang)
+             `;
+        } else if (filter === 'friends') {
             // Chỉ lấy bài của bạn bè
             matchClause = `
                 MATCH (me:NguoiDung {ma_nguoi_dung: $currentUserId})-[:IS_FRIENDS_WITH]-(u:NguoiDung)
@@ -140,7 +145,7 @@ const getAllPosts = async (userId, filter) => {
             ${limitClause}
         `;
 
-        const result = await session.run(query, { currentUserId });
+        const result = await session.run(query, { currentUserId, targetUserId });
 
         // 4. MAP DỮ LIỆU TRẢ VỀ
         const posts = result.records.map(record => {
