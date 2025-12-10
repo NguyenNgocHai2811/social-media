@@ -1,7 +1,7 @@
 const{ getSession}= require('../config/neo4j');
 const bcrypt = require('bcrypt');
 
-
+//  
 const registerUser = async (userData) => {
     const {ten_hien_thi, email, mat_khau} = userData;
     const session = getSession();

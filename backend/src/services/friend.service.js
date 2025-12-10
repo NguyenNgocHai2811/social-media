@@ -1,4 +1,5 @@
 const driver = require('../config/neo4j');
+
 const getFriendshipStatus = async (currentUserId, otherUserId) => {
     const session = driver.getSession();
     try {
@@ -138,6 +139,30 @@ const getFriends = async (userId) =>{
     }
 }
 
+const searchFriendUser = async (currentUserId, keyword) => {
+    const session = driver.getSession();
+    try {
+        const result = await session.run(
+            `
+                MATCH (u:NguoiDung)
+                WHERE toLower(u.ten_hien_thi) CONTAINS toLower($keyword)
+                RETURN {
+                    anh_bia : u.anh_bia,
+                    anh_dai_dien : u.anh_dai_dien,
+                    gioi_thieu : u.gioi_thieu,
+                    song_o_dau : u.song_o_dau,
+                    ten_hien_thi : u.ten_hien_thi
+                } as user
+            `,
+            { keyword, currentUserId }
+        );
+
+        return result.records.map(r => r.get("user"));
+
+    } finally {
+        await session.close();
+    }
+};
 
 
 
@@ -149,5 +174,6 @@ module.exports = {
     acceptFriendRequest,
     rejectFriendRequest,
     unFriendUser,
+    searchFriendUser,
     getFriends
 }

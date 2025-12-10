@@ -1,5 +1,5 @@
 const { getSession } = require('../config/neo4j');
-const { v4: uuidv4 } = require('uuid');
+const { v4: uuidv4 } = require('uuid'); //
 
 const createPost = async (postData) => {
     // Fix: Default noi_dung to empty string to prevent Neo4j driver error with undefined.
@@ -112,7 +112,92 @@ const getAllPosts = async () => {
     }
 };
 
+const toggleLikePost = async (userId, postId) => {
+    const session = getSession();
+    try {
+        // Chỉ cần MỘT lần session.run
+        const result = await session.run(
+            `
+            // 1. Tìm người dùng và bài viết
+            MATCH (u:NguoiDung {ma_nguoi_dung: $userId})
+            MATCH (p:BaiDang {ma_bai_dang: $postId})
+            
+            // 2. "Chìa khóa": Thử tìm [LIKE] (nếu có)
+            // Dùng OPTIONAL MATCH để nếu không tìm thấy, 'l' sẽ là NULL
+            // và câu lệnh vẫn tiếp tục (không bị lỗi)
+            OPTIONAL MATCH (u)-[l:LIKE]->(p)
+            
+            
+            // "IF l IS NOT NULL THEN..." (Nếu đã like -> thì xóa 'l')
+            FOREACH (ignoreMe IN CASE WHEN l IS NOT NULL THEN [1] ELSE [] END |
+                DELETE l
+            )
+            
+            // "IF l IS NULL THEN..." (Nếu chưa like -> thì tạo mới)
+            FOREACH (ignoreMe IN CASE WHEN l IS NULL THEN [1] ELSE [] END |
+                CREATE (u)-[k:LIKE {created_at: timestamp()}]->(p)
+            )
+            RETURN CASE WHEN l IS NOT NULL THEN 'Unliked' ELSE 'Liked' END AS action
+            `,
+            { userId, postId }
+        );
+
+        // 5. Lấy kết quả từ câu lệnh RETURN
+        //    (Nó sẽ là 'Liked' hoặc 'Unliked' tùy thuộc vào
+        //     trạng thái CŨ của 'l' là gì)
+        if (result.records.length > 0) {
+            const action = result.records[0].get('action');
+            return { message: action };
+        } else {
+            // Điều này không nên xảy ra nếu userId và postId là đúng
+            throw new Error("User or Post not found.");
+        }
+
+    } catch (err) {
+        console.error("Error toggling like:", err);
+        return { error: err.message }; // Trả về lỗi
+    } finally {
+        if (session) {
+            await session.close();
+        }
+    }
+}
+
+// xoá bài viết
+const deletePost = async (userId, postId) => {
+    const session = getSession();
+    try {
+        const result = await session.run(
+            `
+            MATCH (:NguoiDung {ma_nguoi_dung: $userId}) -[:DANG_BAI]-> (post:BaiDang {ma_bai_dang: $postId})
+            DETACH DELETE post
+            `,
+            { userId, postId }
+        );
+
+      const nodesDeleted = result.summary.counters.updates().nodesDeleted;
+
+        if (nodesDeleted > 0) {
+             console.log(`>>> THÀNH CÔNG: Đã xoá ${nodesDeleted} bài viết.`);
+             return true;
+        } else {
+            console.log(`>>> THẤT BẠI: Không tìm thấy bài viết hoặc người dùng không khớp.`);
+            return false;
+        }
+    } catch (err) {
+        console.error("Error in deletePost service:", err);
+        throw err;
+    } finally {
+        if (session) {
+            await session.close();
+        }
+    }
+}
+
 module.exports = {
     createPost,
     getAllPosts,
+    toggleLikePost,
+    deletePost
+
 };
