@@ -3,7 +3,7 @@ import axios from 'axios';
 import { Link, useNavigate } from 'react-router-dom';
 import { io } from 'socket.io-client';
 
-// Import Icons (Đã lọc bỏ trùng lặp)
+// Import Icons
 import searchIcon from '../../assets/images/search.svg';
 import notificationIcon from '../../assets/images/notification.svg';
 import iconChat from '../../assets/images/comment.svg';
@@ -15,6 +15,7 @@ const Header = () => {
     const [keyword, setKeyword] = useState('');
     const [notifications, setNotifications] = useState([]);
     const [unreadCount, setUnreadCount] = useState(0);
+    const [unreadChatCount, setUnreadChatCount] = useState(0); // New state for chat
     const [showDropdown, setShowDropdown] = useState(false);
     
     const dropdownRef = useRef(null);
@@ -26,7 +27,7 @@ const Header = () => {
         ? process.env.REACT_APP_API_URL
         : process.env.REACT_APP_API_URL_LAN;
 
-    // 1. Fetch User Info & Notifications
+    // 1. Fetch User Info, Notifications & Chat Count
     useEffect(() => {
         const fetchUser = async () => {
             const token = localStorage.getItem('token');
@@ -65,9 +66,23 @@ const Header = () => {
                 console.error('Failed to fetch notifications:', err);
             }
         };
+        
+        const fetchUnreadChat = async () => {
+            const token = localStorage.getItem('token');
+            if (!token) return;
+            try {
+                const res = await axios.get(`${API_BASE}/api/chat/unread-count`, {
+                    headers: { Authorization: `Bearer ${token}` }
+                });
+                setUnreadChatCount(res.data.count);
+            } catch (err) {
+                console.error('Failed to fetch unread chat count:', err);
+            }
+        };
 
         fetchUser();
         fetchNotifications();
+        fetchUnreadChat();
     }, [navigate, API_BASE]);
 
     // 2. Socket.IO Setup
@@ -81,9 +96,27 @@ const Header = () => {
                 transports: ['websocket']
             });
 
+            // Listen for General Notifications
             socketRef.current.on('newNotification', (newNotif) => {
                 setNotifications(prev => [newNotif, ...prev]);
                 setUnreadCount(prev => prev + 1);
+            });
+            
+            // Listen for New Chat Messages
+            socketRef.current.on('newChatMessage', (message) => {
+                // If the message is incoming (not from me), increment unread count
+                // Assuming message.sender.ma_nguoi_dung is available and distinct
+                // We don't have detailed check here if we are already on chat page for that user
+                // Ideally, ChatPage clears it. But global header should show it if we are elsewhere.
+                // Or if we are on chat page, we might want to not increment? 
+                // For simplicity, always increment, and let ChatPage actions (fetch/read) clear it.
+                // But since we can't easily sync state between Header and ChatPage without Context/Redux,
+                // We'll accept a small desync until refresh or navigation.
+                // However, if we are the sender, we shouldn't increment.
+                
+                if (message.sender.ma_nguoi_dung !== userId) {
+                     setUnreadChatCount(prev => prev + 1);
+                }
             });
         }
 
@@ -127,7 +160,7 @@ const Header = () => {
 
     const handleNotificationClick = (notif) => {
         setShowDropdown(false);
-        // Có thể navigate tới bài viết tại đây nếu cần
+        // Could navigate to post here
     };
 
     const handleLogout = () => {
@@ -143,6 +176,14 @@ const Header = () => {
         if ((isEnterKey || isClick) && keyword.trim()) {
             navigate(`/search?q=${encodeURIComponent(keyword.trim())}`);
         }
+    };
+    
+    // Handler for Chat Icon Click
+    const handleChatClick = () => {
+        navigate('/chat');
+        // Optionally clear unread count here if we assume opening chat clears all?
+        // Usually it doesn't until we open specific threads.
+        // But for better UX if count is huge? No, keep it per logic.
     };
 
     if (!user) {
@@ -186,12 +227,21 @@ const Header = () => {
                         <img src={userIcon} alt="menu" className="w-6 h-6" />
                     </div>
 
-                    {/* Icon Chat */}
-                    <div className="flex items-center justify-center w-10 h-10 rounded-full cursor-pointer hover:bg-gray-200 transition-colors" title="Messages">
+                    {/* Icon Chat (UPDATED) */}
+                    <div 
+                        className="flex items-center justify-center w-10 h-10 rounded-full cursor-pointer hover:bg-gray-200 transition-colors relative" 
+                        title="Messages"
+                        onClick={handleChatClick}
+                    >
                         <img src={iconChat} alt="chat" className="w-6 h-6" />
+                        {unreadChatCount > 0 && (
+                            <span className="absolute top-0 right-0 bg-red-500 text-white text-xs font-bold rounded-full h-5 w-5 flex items-center justify-center transform translate-x-1/4 -translate-y-1/4">
+                                {unreadChatCount}
+                            </span>
+                        )}
                     </div>
 
-                    {/* --- SỬA LỖI Ở ĐÂY: Icon Notification --- */}
+                    {/* Icon Notification */}
                     <div className="relative" ref={dropdownRef}>
                         <div 
                             className="flex items-center justify-center w-10 h-10 rounded-full cursor-pointer hover:bg-gray-200 relative" 
@@ -250,7 +300,6 @@ const Header = () => {
                             </div>
                         )}
                     </div>
-                    {/* --- KẾT THÚC SỬA --- */}
 
                     {/* Icon Logout */}
                     <div
