@@ -4,28 +4,30 @@ const friendController = require('../controllers/friend.controller');
 const authMiddleware = require('../middleware/auth.middleware');
 
 // get friendship status
-router.get('/status/:userId',authMiddleware.verifyToken, friendController.getFriendshipStatus);
+router.get('/status/:userId', authMiddleware.verifyToken, friendController.getFriendshipStatus);
 
 // send friend request
 router.post('/request/:userId', authMiddleware.verifyToken, friendController.sendFriendRequest);
 
 // cancel friend request 
-router.delete('/request/:userId', authMiddleware.verifyToken,friendController.cancelFriendRequest);
+router.delete('/request/:userId', authMiddleware.verifyToken, friendController.cancelFriendRequest);
 
 // get pending friend request
-router.get('/requests',authMiddleware.verifyToken, friendController.getFriendRequest);
+router.get('/requests', authMiddleware.verifyToken, friendController.getFriendRequest);
 
 // Accept friend request
 router.post('/accept/:userId', authMiddleware.verifyToken, friendController.acceptFriendRequest);
 
-// Reject friend request 
-router.delete('reject/:userId',authMiddleware.verifyToken, friendController.rejectFriendRequest);
+// Reject friend request (Đã sửa: thêm dấu / ở trước reject)
+router.delete('/reject/:userId', authMiddleware.verifyToken, friendController.rejectFriendRequest);
 
 // unfriend user
-router.delete('/unfriend/:userId',authMiddleware.verifyToken,friendController.unFriendUser);
+router.delete('/unfriend/:userId', authMiddleware.verifyToken, friendController.unFriendUser);
 
-//get friends list 
-router.get('/friends',authMiddleware.verifyToken, friendController.getFriends);
+// get friends list 
+router.get('/friends', authMiddleware.verifyToken, friendController.getFriends);
 
+// search friend
+router.post('/search', authMiddleware.verifyToken, friendController.searchFriendUser);
 
 module.exports = router;
