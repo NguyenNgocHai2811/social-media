@@ -105,25 +105,30 @@ const Header = () => {
         };
     }, []);
 
-    const handleNotificationClick = async (notif) => {
-        if (!notif.da_doc) {
-            try {
-                const token = localStorage.getItem('token');
-                await axios.put(`${API_BASE}/api/notifications/${notif.id}/read`, {}, {
-                    headers: { Authorization: `Bearer ${token}` }
-                });
-                
-                // Update local state
-                setNotifications(prev => prev.map(n => 
-                    n.id === notif.id ? { ...n, da_doc: true } : n
-                ));
-                setUnreadCount(prev => Math.max(0, prev - 1));
-            } catch (err) {
-                console.error('Failed to mark notification as read:', err);
-            }
+    const handleMarkAllRead = async () => {
+        if (unreadCount === 0) return;
+
+        try {
+            const token = localStorage.getItem('token');
+            // Optimistically update UI
+            setUnreadCount(0);
+            setNotifications(prev => prev.map(n => ({ ...n, da_doc: true })));
+
+            await axios.put(`${API_BASE}/api/notifications/mark-all-read`, {}, {
+                headers: { Authorization: `Bearer ${token}` }
+            });
+        } catch (err) {
+            console.error('Failed to mark all notifications as read:', err);
+            // Revert on failure could be added here if needed, but for now log error is sufficient
         }
-        // Navigate or action? Currently just mark as read. 
-        // Could navigate to post if related_id exists.
+    };
+
+    const handleNotificationClick = async (notif) => {
+        // Since we mark all as read when opening dropdown, this might not be strictly necessary 
+        // for the "unread" status logic, but it's good to keep it or just handle navigation.
+        // If the user wants specific behavior when clicking a single notification (like navigation),
+        // we can implement it here. For now, since "all are read" when the list opens, 
+        // we mainly focus on closing the dropdown.
         setShowDropdown(false);
     };
 
@@ -161,7 +166,12 @@ const Header = () => {
                         <div 
                             className="flex items-center justify-center w-10 h-10 rounded-full cursor-pointer hover:bg-gray-200 relative" 
                             title="Notifications"
-                            onClick={() => setShowDropdown(!showDropdown)}
+                            onClick={() => {
+                                if (!showDropdown) {
+                                    handleMarkAllRead();
+                                }
+                                setShowDropdown(!showDropdown);
+                            }}
                         >
                             <img src={notificationIcon} alt="notification" className="w-6 h-6" />
                             {unreadCount > 0 && (

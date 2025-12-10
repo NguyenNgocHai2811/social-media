@@ -84,8 +84,26 @@ const markAsRead = async (notificationId, userId) => {
     }
 };
 
+const markAllAsRead = async (userId) => {
+    const session = driver.getSession();
+    try {
+        await session.run(
+            `
+            MATCH (n:ThongBao)-[:THONG_BAO_CHO]->(u:NguoiDung {ma_nguoi_dung: $userId})
+            WHERE n.da_doc = false
+            SET n.da_doc = true
+            RETURN count(n) as updatedCount
+            `,
+            { userId }
+        );
+    } finally {
+        await session.close();
+    }
+};
+
 module.exports = {
     createNotification,
     getNotifications,
-    markAsRead
+    markAsRead,
+    markAllAsRead
 };
