@@ -1,93 +1,93 @@
 const friendService = require('../services/friend.service');
 
-const getFriendshipStatus = async(req , res )=> {
+const getFriendshipStatus = async (req, res) => {
     try {
         const status = await friendService.getFriendshipStatus(req.user.ma_nguoi_dung, req.params.userId);
         res.json(status);
     } catch (error) {
-        res.status(500).json({message: error.message})
+        res.status(500).json({ message: error.message })
     }
 };
 
-const sendFriendRequest = async(req , res)=>{
+const sendFriendRequest = async (req, res) => {
     try {
         await friendService.sendFriendRequest(req.user.ma_nguoi_dung, req.params.userId);
-        res.status(201).json({message: 'Friend request sent successfully'});
+        res.status(201).json({ message: 'Friend request sent successfully' });
     } catch (error) {
-        res.status(500).json({message: error.message});
+        res.status(500).json({ message: error.message });
     }
 };
 
-const cancelFriendRequest = async(req , res )=>{
-    try{
+const cancelFriendRequest = async (req, res) => {
+    try {
         await friendService.cancelFriendRequest(req.user.ma_nguoi_dung, req.params.userId);
-        res.json({message: 'Friend request accepted successfully'});
+        res.json({ message: 'Friend request accepted successfully' });
 
-    }catch(err){
-        res.status(500).json({message: err.message});
+    } catch (err) {
+        res.status(500).json({ message: err.message });
     }
 }
 
-const getFriendRequest = async (req , res )=>{
+const getFriendRequest = async (req, res) => {
     try {
         const request = await friendService.getFriendRequest(req.user.ma_nguoi_dung);
         res.json(request);
-    } catch(err){
-        res.status(500).json({message: err.message});
+    } catch (err) {
+        res.status(500).json({ message: err.message });
     }
 };
 
-const acceptFriendRequest = async (req, res ) =>{
+const acceptFriendRequest = async (req, res) => {
     try {
         await friendService.acceptFriendRequest(req.user.ma_nguoi_dung, req.params.userId);
-        res.json({message: 'Friend request accepted successfully'});
+        res.json({ message: 'Friend request accepted successfully' });
     } catch (error) {
-        res.status(500).json({ message: error.message});
+        res.status(500).json({ message: error.message });
     }
 };
 
-const rejectFriendRequest =async (req, res) =>{
+const rejectFriendRequest = async (req, res) => {
     try {
-        await friendService.acceptFriendRequest(req.user.ma_nguoi_dung,req.params.userId);
-        res.json({message:'Friend request rejected successfully'});
-    } catch(err){
-        res.status(500).json({message: err.message});
+        await friendService.rejectFriendRequest(req.user.ma_nguoi_dung, req.params.userId);
+        res.json({ message: 'Friend request rejected successfully' });
+    } catch (err) {
+        res.status(500).json({ message: err.message });
     }
 };
-const unFriendUser = async (req ,res )=>{
-    try{
+const unFriendUser = async (req, res) => {
+    try {
         await friendService.unFriendUser(req.user.ma_nguoi_dung, req.params.userId);
-        res.json({message:'User unfriend successfully'});
-    } catch (err){
-        res.status(500).json({message: err.message});
+        res.json({ message: 'User unfriend successfully' });
+    } catch (err) {
+        res.status(500).json({ message: err.message });
     }
 }
 
 // search friend
-const searchFriendUser = async(req, res) => {
+const searchFriendUser = async (req, res) => {
     try {
-        const { keyword} = req.body;
+        const { keyword } = req.body;
         const currentUserId = req.user.ma_nguoi_dung;
-        console.log(keyword)
-        if (!keyword){
-            return res.status(400).json({message: 'vui long nhap ten can tim'});
+        if (!keyword) {
+            return res.status(400).json({ message: 'vui long nhap ten can tim' });
         }
 
         const user = await friendService.searchFriendUser(currentUserId, keyword);
         res.json(user);
-    }catch (err) {
-        res.status(500).json({message: err.message});
+
+    } catch (err) {
+        res.status(500).json({ message: err.message });
     }
 }
 
 
 
-const getFriends = async (req,res )=>{
+const getFriends = async (req, res) => {
     try {
         const friends = await friendService.getFriends(req.user.ma_nguoi_dung);
         res.json(friends)
-    } catch(err){
-        res.status(500).json({message: err.message});
+    } catch (err) {
+        res.status(500).json({ message: err.message });
     }
 }
 module.exports = {

@@ -14,7 +14,7 @@ const PostList = ({ userID, newPost, posts: postsFromProps }) => {
         : process.env.REACT_APP_API_URL_LAN;
 
     useEffect(() => {
-        const fetchAllPosts = async () => {
+        const fetchPosts = async () => {
             setLoading(true);
             try {
                 const token = localStorage.getItem('token');
@@ -23,6 +23,17 @@ const PostList = ({ userID, newPost, posts: postsFromProps }) => {
                     return;
                 }
 
+                let url;
+                if (userID) {
+                    // Nếu có userID -> Gọi API lấy bài của người đó (API này ĐÃ check like)
+                    url = `${API_BASE}/api/posts/user/${userID}`;
+                } else {
+                    // Nếu không có userID -> Gọi API Newsfeed
+                    url = `${API_BASE}/api/posts`;
+                }
+
+                const response = await axios.get(url, {
+                    headers: { Authorization: `Bearer ${token}` }
                 let filterParam = 'all';
                 switch (activeTab) {
                     case 'Bạn bè':
@@ -42,6 +53,7 @@ const PostList = ({ userID, newPost, posts: postsFromProps }) => {
                     headers: { Authorization: `Bearer ${token}` },
                     params: { filter: filterParam }
                 });
+
                 setPosts(response.data);
             } catch (err) {
                 setError('Failed to fetch posts.');
@@ -51,12 +63,15 @@ const PostList = ({ userID, newPost, posts: postsFromProps }) => {
             }
         };
 
-        if (postsFromProps) {
+        // ƯU TIÊN 1: Nếu cha truyền bài viết trực tiếp (dùng cho trường hợp đặc biệt)
+        if (postsFromProps && postsFromProps.length > 0) {
             setPosts(postsFromProps);
             setLoading(false);
         } else {
-            fetchAllPosts();
+            // ƯU TIÊN 2: Tự gọi API để lấy dữ liệu chuẩn (có trạng thái Like)
+            fetchPosts();
         }
+    }, [userID, postsFromProps, API_BASE]);
     }, [postsFromProps, API_BASE, activeTab]);
 
     useEffect(() => {
@@ -65,13 +80,8 @@ const PostList = ({ userID, newPost, posts: postsFromProps }) => {
         }
     }, [newPost]);
 
-    if (loading) {
-        return <p className="text-center py-10">Loading posts...</p>;
-    }
-
-    if (error) {
-        return <p className="text-red-600 p-4 text-center">{error}</p>;
-    }
+    if (loading) return <p className="text-center py-10">Loading posts...</p>;
+    if (error) return <p className="text-red-600 p-4 text-center">{error}</p>;
 
     const tabs = ['Tất cả', 'Bạn bè', 'Gần đây', 'Phổ biến'];
 
@@ -84,9 +94,8 @@ const PostList = ({ userID, newPost, posts: postsFromProps }) => {
                         {tabs.map(tab => (
                             <button
                                 key={tab}
-                                className={`bg-transparent border-none py-2 px-1 text-base font-semibold cursor-pointer relative transition-colors duration-300 ${
-                                    activeTab === tab ? 'text-blue-600' : 'text-gray-500 hover:text-blue-500'
-                                }`}
+                                className={`bg-transparent border-none py-2 px-1 text-base font-semibold cursor-pointer relative transition-colors duration-300 ${activeTab === tab ? 'text-blue-600' : 'text-gray-500 hover:text-blue-500'
+                                    }`}
                                 onClick={() => setActiveTab(tab)}
                             >
                                 {tab}

@@ -6,8 +6,7 @@ import NewsFeed from './pages/NewsFeedPage/NewsFeed';
 import ProfilePage from './pages/ProfilePage/ProfilePage';
 import FriendRequestsPage from './pages/FriendRequestPage/FriendRequestPage';
 import FriendsPage from './pages/FriendsPage/FriendsPage';
-
-
+import SearchResults from './pages/SearchFriendPage/SearchFriendPage';
 // A simple check for authencation
 const isAuthenticated = () => {
   return localStorage.getItem('token') !== null;
@@ -56,6 +55,14 @@ function App() {
           }
         />
         <Route path='/' element={<Navigate to='/newsfeed' />} />
+        <Route
+          path="/search"
+          element={
+            <PrivateRoute>
+              <SearchResults />
+            </PrivateRoute>
+          }
+        />
       </Routes>
     </Router>
   );

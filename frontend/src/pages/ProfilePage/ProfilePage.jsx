@@ -56,7 +56,7 @@ const ProfilePage = () => {
             setIsLoading(false);
         }
     }, [userId, token, API_BASE, loggedInUserId]);
-   
+
     useEffect(() => {
         fetchProfileData();
     }, [fetchProfileData]);
@@ -114,8 +114,8 @@ const ProfilePage = () => {
     return (
         <div className="bg-gray-100 min-h-screen">
             <Header />
-           <div className="relative bg-white rounded-b-lg shadow-sm mb-5 max-w-[950px] mx-auto z-20">
-              <div className="h-96 overflow-hidden rounded-b-lg">
+            <div className="relative bg-white rounded-b-lg shadow-sm mb-5 max-w-[950px] mx-auto z-20">
+                <div className="h-96 overflow-hidden rounded-b-lg">
                     <img src={user.anh_bia || defaultCover} alt="Cover" className="w-full h-full object-cover block" />
                 </div>
                 <div className="absolute bottom-0 left-0 right-0 flex items-end px-[30px] pb-5 bg-gradient-to-t from-black/60 to-transparent rounded-b-lg">
@@ -159,15 +159,15 @@ const ProfilePage = () => {
                 </div>
             </div>
 
-           <div className="profile-content-area relative z-10">
+            <div className="profile-content-area relative z-10">
                 <div className="profile-left-column">
                     <div className="sticky-content">
                         <Intro user={user} />
                     </div>
                 </div>
                 <div className="profile-right-column">
-                   
-                    <PostList posts={posts} userId = {userId}/>
+
+                    <PostList userID={userId} />
                 </div>
             </div>
 

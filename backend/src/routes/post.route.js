@@ -17,4 +17,7 @@ router.post('/:id/like', authMiddleware.verifyToken, postController.likePost);
 // Delete post
 router.delete('/:id', authMiddleware.verifyToken, postController.deletePost);
 
+// Get posts by user
+router.get('/user/:userId', authMiddleware.verifyToken, postController.getPostsByUser);
+
 module.exports = router;
