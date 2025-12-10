@@ -78,107 +78,89 @@ const createPost = async (postData) => {
     }
 };
 
-
-const getAllPosts = async (currentUserId = null) => {
-    const session = getSession();
-    try {
-        // Xử lý currentUserId: Nếu null/undefined thì gán là chuỗi rỗng để tránh lỗi query
-        const safeUserId = currentUserId || '';
-
-        // Query an toàn: Dùng COUNT thay vì size() để tránh lỗi cú pháp ở các bản Neo4j cũ
-        // Dùng CASE WHEN để check like thay vì EXISTS
-        const query = `
-            MATCH (u:NguoiDung)-[:DANG_BAI]->(p:BaiDang)
-            OPTIONAL MATCH (p)-[:CO_MEDIA]->(m:Media)
-            
-            // Đếm like
-            OPTIONAL MATCH (p)<-[l:LIKE]-()
-            WITH p, u, m, count(l) as so_luot_like
-            
-            // Đếm comment
-            OPTIONAL MATCH (p)-[:CO_BINH_LUAN]->(bl:BinhLuan)
-            WITH p, u, m, so_luot_like, count(bl) as so_luot_binh_luan
-
-            // Kiểm tra user hiện tại đã like chưa
-            // Tìm quan hệ LIKE từ user hiện tại (nếu có)
-            OPTIONAL MATCH (me:NguoiDung {ma_nguoi_dung: $safeUserId})-[my_like:LIKE]->(p)
-            
-            RETURN p, u, m, so_luot_like, so_luot_binh_luan, 
-                   CASE WHEN my_like IS NOT NULL THEN true ELSE false END as da_like
-            ORDER BY p.ngay_tao DESC
-        `;
-
-        const result = await session.run(query, { safeUserId });
 const getAllPosts = async (userId, filter) => {
     const session = getSession();
     try {
-        let query = "";
-        const params = { userId };
+        // Đảm bảo userId không bị null/undefined khi query (để tránh lỗi query)
+        const currentUserId = userId || '';
+        
+        let matchClause = "";
+        let orderByClause = "";
+        let limitClause = "";
 
-        // Base match
+        // 1. XÂY DỰNG MATCH CLAUSE DỰA TRÊN FILTER
         if (filter === 'friends') {
-            query = `
-                MATCH (u:NguoiDung)-[:IS_FRIENDS_WITH]-(me:NguoiDung {ma_nguoi_dung: $userId})
+            // Chỉ lấy bài của bạn bè
+            matchClause = `
+                MATCH (me:NguoiDung {ma_nguoi_dung: $currentUserId})-[:IS_FRIENDS_WITH]-(u:NguoiDung)
                 MATCH (u)-[:DANG_BAI]->(p:BaiDang)
             `;
         } else {
-            // all, recent, popular
-            query = `
+            // Mặc định: Lấy tất cả bài viết (Newsfeed chung)
+            matchClause = `
                 MATCH (u:NguoiDung)-[:DANG_BAI]->(p:BaiDang)
             `;
         }
 
-        // Common parts
-        query += `
+        // 2. XÂY DỰNG ORDER BY VÀ LIMIT
+        if (filter === 'popular') {
+            // Sắp xếp theo độ phổ biến (Like + Comment)
+            orderByClause = `ORDER BY (so_luot_binh_luan + so_luot_like) DESC, p.ngay_tao DESC`;
+        } else {
+            // Mặc định: Sắp xếp theo thời gian mới nhất
+            orderByClause = `ORDER BY p.ngay_tao DESC`;
+        }
+
+        // Giới hạn số lượng nếu là tab "Gần đây" hoặc mặc định để tránh load quá nặng
+        if (filter === 'recent') {
+            limitClause = `LIMIT 20`;
+        } else {
+            limitClause = `LIMIT 50`; // Giới hạn mặc định để không crash app
+        }
+
+        // 3. TẠO QUERY HOÀN CHỈNH
+        const query = `
+            ${matchClause}
+            
+            // Lấy thông tin Media (nếu có)
             OPTIONAL MATCH (p)-[:CO_MEDIA]->(m:Media)
-            WITH p, u, m, 
+
+            // Kiểm tra User hiện tại có like bài này không?
+            OPTIONAL MATCH (me:NguoiDung {ma_nguoi_dung: $currentUserId})-[my_like:LIKE]->(p)
+
+            // Đếm Like và Comment (Sử dụng Sub-query COUNT để tối ưu hiệu năng)
+            WITH p, u, m, my_like,
                  COUNT { (p)-[:CO_BINH_LUAN]->(:BinhLuan) } as so_luot_binh_luan,
                  COUNT { (:NguoiDung)-[:LIKE]->(p) } as so_luot_like
-            RETURN p, u, m, so_luot_binh_luan, so_luot_like
+
+            RETURN p, u, m, so_luot_binh_luan, so_luot_like,
+                   CASE WHEN my_like IS NOT NULL THEN true ELSE false END as da_like
+            
+            ${orderByClause}
+            ${limitClause}
         `;
 
-        // Ordering and Limit
-        if (filter === 'popular') {
-            query += ` ORDER BY (so_luot_binh_luan + so_luot_like) DESC, p.ngay_tao DESC`;
-        } else {
-            query += ` ORDER BY p.ngay_tao DESC`;
-        }
+        const result = await session.run(query, { currentUserId });
 
-        if (filter === 'recent') {
-            query += ` LIMIT 12`;
-        }
-
-        const result = await session.run(query, params);
-
+        // 4. MAP DỮ LIỆU TRẢ VỀ
         const posts = result.records.map(record => {
             const post = record.get('p').properties;
             const user = record.get('u').properties;
             const media = record.get('m') ? record.get('m').properties : null;
-
-            // disableLosslessIntegers: true in config/neo4j.js, so these are numbers
-            const so_luot_binh_luan = record.get('so_luot_binh_luan');
-            const so_luot_like = record.get('so_luot_like');
-
-            // Sanitize user data
-            delete user.mat_khau;
-            delete user.email; // Or any other private fields
-
-            post.so_luot_binh_luan = so_luot_binh_luan;
-            post.so_luot_like = so_luot_like;
-
-            // --- HÀM CONVERT SỐ AN TOÀN (CHỐNG CRASH) ---
+            
+            // Hàm chuyển đổi số an toàn (Neo4j Integer -> JS Number)
             const toNativeNumber = (val) => {
                 if (val === null || val === undefined) return 0;
-                if (typeof val === 'number') return val; // Đã là số JS
-                if (val.low !== undefined) return val.toNumber(); // Là số Neo4j
-                return 0; // Fallback
+                if (typeof val === 'number') return val;
+                if (val.low !== undefined) return val.toNumber();
+                return 0;
             };
 
-            const so_luot_like = toNativeNumber(record.get('so_luot_like'));
             const so_luot_binh_luan = toNativeNumber(record.get('so_luot_binh_luan'));
-            const da_like = record.get('da_like'); // Đã là boolean nhờ query CASE WHEN
+            const so_luot_like = toNativeNumber(record.get('so_luot_like'));
+            const da_like = record.get('da_like');
 
-            // Xóa thông tin nhạy cảm
+            // Xóa thông tin nhạy cảm của người đăng
             if (user) {
                 delete user.mat_khau;
                 delete user.email;
@@ -188,89 +170,21 @@ const getAllPosts = async (userId, filter) => {
                 ...post,
                 user,
                 media,
-                so_luot_like,
                 so_luot_binh_luan,
+                so_luot_like,
                 da_like
             };
         });
 
         return posts;
+
     } catch (error) {
-        // Log lỗi ra terminal 
-        console.error(">>> LỖI GỐC Ở GET ALL POSTS:", error);
+        console.error("Lỗi tại getAllPosts service:", error);
         throw error;
     } finally {
         await session.close();
     }
 };
-
-const getPostsByUserId = async (currentUserId, targetUserId) => {
-    const session = getSession();
-    try {
-        const safeUserId = currentUserId || '';
-
-        const query = `
-            // 1. Tìm User mục tiêu và các bài đăng của họ
-            MATCH (u:NguoiDung {ma_nguoi_dung: $targetUserId})-[:DANG_BAI]->(p:BaiDang)
-            
-            // 2. Lấy Media (nếu có)
-            OPTIONAL MATCH (p)-[:CO_MEDIA]->(m:Media)
-            
-            // 3. Đếm Like tổng
-            OPTIONAL MATCH (p)<-[l:LIKE]-()
-            WITH p, u, m, count(l) as so_luot_like
-
-            // 4. Đếm Comment tổng
-            OPTIONAL MATCH (p)-[:CO_BINH_LUAN]->(bl:BinhLuan)
-            WITH p, u, m, so_luot_like, count(bl) as so_luot_binh_luan
-
-            // 5. QUAN TRỌNG: Kiểm tra xem người đang xem (currentUserId) có like bài này không
-            OPTIONAL MATCH (me:NguoiDung {ma_nguoi_dung: $safeUserId})-[my_like:LIKE]->(p)
-
-            RETURN p, u, m, so_luot_like, so_luot_binh_luan,
-                   CASE WHEN my_like IS NOT NULL THEN true ELSE false END as da_like
-            ORDER BY p.ngay_tao DESC
-        `;
-
-        const result = await session.run(query, { targetUserId, safeUserId });
-
-        return result.records.map(record => {
-            const post = record.get('p').properties;
-            const user = record.get('u').properties;
-            const media = record.get('m') ? record.get('m').properties : null;
-
-            // Hàm convert số (copy từ getAllPosts xuống cho an toàn)
-            const toNativeNumber = (val) => {
-                if (val === null || val === undefined) return 0;
-                if (typeof val === 'number') return val;
-                if (val.low !== undefined) return val.toNumber();
-                return 0;
-            };
-
-            const so_luot_like = toNativeNumber(record.get('so_luot_like'));
-            const so_luot_binh_luan = toNativeNumber(record.get('so_luot_binh_luan'));
-            const da_like = record.get('da_like'); // Đã check quan hệ với currentUserId
-
-            if (user) {
-                delete user.mat_khau;
-                delete user.email;
-            }
-
-            return {
-                ...post,
-                user, // Thông tin người đăng (targetUser)
-                media,
-                so_luot_like,
-                so_luot_binh_luan,
-                da_like // Trạng thái chính xác
-            };
-        });
-
-    } finally {
-        await session.close();
-    }
-};
-
 
 const toggleLikePost = async (userId, postId) => {
     const session = getSession();
@@ -384,7 +298,6 @@ module.exports = {
     getAllPosts,
     toggleLikePost,
     deletePost,
-    getPostsByUserId,
     getPostAuthorId
 };
   

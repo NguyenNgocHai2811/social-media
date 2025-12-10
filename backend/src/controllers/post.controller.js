@@ -75,13 +75,6 @@ const getAllPosts = async (req, res) => {
 
 const getPostsByUser = async (req, res) => {
     try {
-        // ID của người đang xem (lấy từ token)
-        const currentUserId = req.user ? req.user.ma_nguoi_dung : null;
-
-        // ID của profile đang xem (lấy từ URL)
-        const targetUserId = req.params.userId;
-
-        const posts = await postService.getPostsByUserId(currentUserId, targetUserId);
         const { filter } = req.query;
         const userId = req.user.ma_nguoi_dung;
         const posts = await postService.getAllPosts(userId, filter);
