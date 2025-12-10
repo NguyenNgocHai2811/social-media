@@ -34,6 +34,24 @@ const PostList = ({ userID, newPost, posts: postsFromProps }) => {
 
                 const response = await axios.get(url, {
                     headers: { Authorization: `Bearer ${token}` }
+                let filterParam = 'all';
+                switch (activeTab) {
+                    case 'Bạn bè':
+                        filterParam = 'friends';
+                        break;
+                    case 'Gần đây':
+                        filterParam = 'recent';
+                        break;
+                    case 'Phổ biến':
+                        filterParam = 'popular';
+                        break;
+                    default:
+                        filterParam = 'all';
+                }
+
+                const response = await axios.get(`${API_BASE}/api/posts`, {
+                    headers: { Authorization: `Bearer ${token}` },
+                    params: { filter: filterParam }
                 });
 
                 setPosts(response.data);
@@ -54,6 +72,7 @@ const PostList = ({ userID, newPost, posts: postsFromProps }) => {
             fetchPosts();
         }
     }, [userID, postsFromProps, API_BASE]);
+    }, [postsFromProps, API_BASE, activeTab]);
 
     useEffect(() => {
         if (newPost) {

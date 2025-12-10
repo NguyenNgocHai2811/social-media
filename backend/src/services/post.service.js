@@ -109,11 +109,62 @@ const getAllPosts = async (currentUserId = null) => {
         `;
 
         const result = await session.run(query, { safeUserId });
+const getAllPosts = async (userId, filter) => {
+    const session = getSession();
+    try {
+        let query = "";
+        const params = { userId };
+
+        // Base match
+        if (filter === 'friends') {
+            query = `
+                MATCH (u:NguoiDung)-[:IS_FRIENDS_WITH]-(me:NguoiDung {ma_nguoi_dung: $userId})
+                MATCH (u)-[:DANG_BAI]->(p:BaiDang)
+            `;
+        } else {
+            // all, recent, popular
+            query = `
+                MATCH (u:NguoiDung)-[:DANG_BAI]->(p:BaiDang)
+            `;
+        }
+
+        // Common parts
+        query += `
+            OPTIONAL MATCH (p)-[:CO_MEDIA]->(m:Media)
+            WITH p, u, m, 
+                 COUNT { (p)-[:CO_BINH_LUAN]->(:BinhLuan) } as so_luot_binh_luan,
+                 COUNT { (:NguoiDung)-[:LIKE]->(p) } as so_luot_like
+            RETURN p, u, m, so_luot_binh_luan, so_luot_like
+        `;
+
+        // Ordering and Limit
+        if (filter === 'popular') {
+            query += ` ORDER BY (so_luot_binh_luan + so_luot_like) DESC, p.ngay_tao DESC`;
+        } else {
+            query += ` ORDER BY p.ngay_tao DESC`;
+        }
+
+        if (filter === 'recent') {
+            query += ` LIMIT 12`;
+        }
+
+        const result = await session.run(query, params);
 
         const posts = result.records.map(record => {
             const post = record.get('p').properties;
             const user = record.get('u').properties;
             const media = record.get('m') ? record.get('m').properties : null;
+
+            // disableLosslessIntegers: true in config/neo4j.js, so these are numbers
+            const so_luot_binh_luan = record.get('so_luot_binh_luan');
+            const so_luot_like = record.get('so_luot_like');
+
+            // Sanitize user data
+            delete user.mat_khau;
+            delete user.email; // Or any other private fields
+
+            post.so_luot_binh_luan = so_luot_binh_luan;
+            post.so_luot_like = so_luot_like;
 
             // --- HÀM CONVERT SỐ AN TOÀN (CHỐNG CRASH) ---
             const toNativeNumber = (val) => {
@@ -312,10 +363,29 @@ const deletePost = async (userId, postId) => {
     }
 }
 
+const getPostAuthorId = async (postId) => {
+    const session = getSession();
+    try {
+        const result = await session.run(
+            `MATCH (u:NguoiDung)-[:DANG_BAI]->(p:BaiDang {ma_bai_dang: $postId}) RETURN u.ma_nguoi_dung as authorId`,
+            { postId }
+        );
+        if (result.records.length > 0) {
+            return result.records[0].get('authorId');
+        }
+        return null;
+    } finally {
+        await session.close();
+    }
+};
+
 module.exports = {
     createPost,
     getAllPosts,
     toggleLikePost,
     deletePost,
-    getPostsByUserId
+    getPostsByUserId,
+    getPostAuthorId
 };
+  
+

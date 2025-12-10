@@ -50,6 +50,22 @@ const postImageStorage = new CloudinaryStorage({
     },
   });
 
+// Storage for story videos
+const storyVideoStorage = new CloudinaryStorage({
+    cloudinary: cloudinary,
+    params: {
+        folder: 'stories',
+        resource_type: 'video', 
+        allowed_formats: ['mp4'],
+        // Attempt to trim on upload to save storage
+        transformation: [{ duration: "30.0", crop: "limit" }],
+        public_id: (req, file) => {
+             const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
+             return `story-${req.user.ma_nguoi_dung}-${uniqueSuffix}`;
+        }
+    }
+});
+
 
 // Middleware for single post image upload
 const uploadPostImage = multer({ storage: postImageStorage });
@@ -58,8 +74,11 @@ const uploadPostImage = multer({ storage: postImageStorage });
 // This now uses the single dynamic storage engine
 const uploadProfileImages = multer({ storage: profileImageStorage });
 
+// Middleware for story video upload
+const uploadStoryVideo = multer({ storage: storyVideoStorage });
 
 module.exports = {
     uploadPostImage,
-    uploadProfileImages // Use this for updating the user profile
+    uploadProfileImages, // Use this for updating the user profile
+    uploadStoryVideo
 };
