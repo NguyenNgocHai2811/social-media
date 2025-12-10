@@ -62,7 +62,9 @@ const createPost = async (req, res) => {
 
 const getAllPosts = async (req, res) => {
     try {
-        const posts = await postService.getAllPosts();
+        const { filter } = req.query;
+        const userId = req.user.ma_nguoi_dung;
+        const posts = await postService.getAllPosts(userId, filter);
         res.status(200).json(posts);
     } catch (error) {
         res.status(500).json({ message: error.message });

@@ -6,7 +6,7 @@ const createPost = async (postData) => {
     const { noi_dung = '', che_do_rieng_tu = 'cong_khai', ma_nguoi_dung, imageFile } = postData;
     const session = getSession();
     const transaction = session.beginTransaction();
-    
+
     try {
         const ma_bai_dang = uuidv4();
         const now = new Date().toISOString();
@@ -33,12 +33,12 @@ const createPost = async (postData) => {
         const record = result.records[0];
         const newPost = record.get('p').properties;
         const user = record.get('u').properties;
-        
+
         // Sanitize user data before attaching to the post object
         delete user.mat_khau;
         delete user.email;
         newPost.user = user;
-        
+
         // Handle media (image) if it exists
         if (imageFile) {
             const ma_media = uuidv4();
@@ -54,17 +54,17 @@ const createPost = async (postData) => {
                  })
                  CREATE (p)-[:CO_MEDIA]->(m)
                  RETURN m`,
-                { 
+                {
                     ma_bai_dang,
-                    ma_media, 
-                    imageUrl: imageFile.path, 
+                    ma_media,
+                    imageUrl: imageFile.path,
                     publicId: imageFile.filename,
-                    now 
+                    now
                 }
             );
             newPost.media = mediaResult.records[0].get('m').properties;
         } else {
-             newPost.media = null;
+            newPost.media = null;
         }
 
         await transaction.commit();
@@ -78,27 +78,63 @@ const createPost = async (postData) => {
     }
 };
 
-const getAllPosts = async () => {
+
+const getAllPosts = async (userId, filter) => {
     const session = getSession();
     try {
-        const result = await session.run(
-            `MATCH (u:NguoiDung)-[:DANG_BAI]->(p:BaiDang)
+        let query = "";
+        const params = { userId };
+
+        // Base match
+        if (filter === 'friends') {
+            query = `
+                MATCH (u:NguoiDung)-[:IS_FRIENDS_WITH]-(me:NguoiDung {ma_nguoi_dung: $userId})
+                MATCH (u)-[:DANG_BAI]->(p:BaiDang)
+            `;
+        } else {
+            // all, recent, popular
+            query = `
+                MATCH (u:NguoiDung)-[:DANG_BAI]->(p:BaiDang)
+            `;
+        }
+
+        // Common parts
+        query += `
             OPTIONAL MATCH (p)-[:CO_MEDIA]->(m:Media)
-            // Đếm số lượng bình luận cho mỗi bài đăng
-            WITH p, u, m, COUNT { (p)-[:CO_BINH_LUAN]->(:BinhLuan) } as so_luot_binh_luan
-            RETURN p, u, m, so_luot_binh_luan
-            ORDER BY p.ngay_tao DESC`
-        );
+            WITH p, u, m, 
+                 COUNT { (p)-[:CO_BINH_LUAN]->(:BinhLuan) } as so_luot_binh_luan,
+                 COUNT { (:NguoiDung)-[:LIKE]->(p) } as so_luot_like
+            RETURN p, u, m, so_luot_binh_luan, so_luot_like
+        `;
+
+        // Ordering and Limit
+        if (filter === 'popular') {
+            query += ` ORDER BY (so_luot_binh_luan + so_luot_like) DESC, p.ngay_tao DESC`;
+        } else {
+            query += ` ORDER BY p.ngay_tao DESC`;
+        }
+
+        if (filter === 'recent') {
+            query += ` LIMIT 12`;
+        }
+
+        const result = await session.run(query, params);
 
         const posts = result.records.map(record => {
             const post = record.get('p').properties;
             const user = record.get('u').properties;
             const media = record.get('m') ? record.get('m').properties : null;
+
+            // disableLosslessIntegers: true in config/neo4j.js, so these are numbers
             const so_luot_binh_luan = record.get('so_luot_binh_luan');
+            const so_luot_like = record.get('so_luot_like');
+
             // Sanitize user data
             delete user.mat_khau;
             delete user.email; // Or any other private fields
+
             post.so_luot_binh_luan = so_luot_binh_luan;
+            post.so_luot_like = so_luot_like;
 
             return { ...post, user, media };
         });
@@ -175,11 +211,11 @@ const deletePost = async (userId, postId) => {
             { userId, postId }
         );
 
-      const nodesDeleted = result.summary.counters.updates().nodesDeleted;
+        const nodesDeleted = result.summary.counters.updates().nodesDeleted;
 
         if (nodesDeleted > 0) {
-             console.log(`>>> THÀNH CÔNG: Đã xoá ${nodesDeleted} bài viết.`);
-             return true;
+            console.log(`>>> THÀNH CÔNG: Đã xoá ${nodesDeleted} bài viết.`);
+            return true;
         } else {
             console.log(`>>> THẤT BẠI: Không tìm thấy bài viết hoặc người dùng không khớp.`);
             return false;
