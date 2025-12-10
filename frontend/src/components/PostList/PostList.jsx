@@ -22,8 +22,25 @@ const PostList = ({ userID, newPost, posts: postsFromProps }) => {
                     setError('Authentication token not found.');
                     return;
                 }
+
+                let filterParam = 'all';
+                switch (activeTab) {
+                    case 'Bạn bè':
+                        filterParam = 'friends';
+                        break;
+                    case 'Gần đây':
+                        filterParam = 'recent';
+                        break;
+                    case 'Phổ biến':
+                        filterParam = 'popular';
+                        break;
+                    default:
+                        filterParam = 'all';
+                }
+
                 const response = await axios.get(`${API_BASE}/api/posts`, {
-                    headers: { Authorization: `Bearer ${token}` }
+                    headers: { Authorization: `Bearer ${token}` },
+                    params: { filter: filterParam }
                 });
                 setPosts(response.data);
             } catch (err) {
@@ -40,7 +57,7 @@ const PostList = ({ userID, newPost, posts: postsFromProps }) => {
         } else {
             fetchAllPosts();
         }
-    }, [postsFromProps, API_BASE]);
+    }, [postsFromProps, API_BASE, activeTab]);
 
     useEffect(() => {
         if (newPost) {
