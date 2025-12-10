@@ -1,5 +1,5 @@
 .stories-container {
-     flex-shrink: 0; /* Prevent the container from shrinking */
+    flex-shrink: 0;
     background-color: #ffffff;
     border-radius: 8px;
     padding: 16px;
@@ -16,51 +16,195 @@
 .stories-scroll-container {
     display: flex;
     overflow-x: auto;
-    padding-bottom: 10px; /* For scrollbar */
+    padding-bottom: 10px;
     gap: 10px;
 }
+
 .story-card {
     flex: 0 0 110px;
     height: 200px;
     border-radius: 8px;
-    background-size: cover;
-    background-position: center;
     position: relative;
     cursor: pointer;
-    color: white;
-    display: flex;
-    flex-direction: column;
-    justify-content: space-between;
-    padding: 8px;
+    overflow: hidden;
     transition: transform 0.2s ease-in-out;
 }
 
 .story-card:hover {
-    transform: scale(1.05);
+    transform: scale(1.02);
 }
 
-.story-card::before {
-    content: '';
+/* Add Story Card Specifics */
+.add-story-card {
+    background-color: #f0f2f5;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-end; /* Push text to bottom */
+    position: relative;
+}
+
+/* User avatar acts as the "top half" image in the add-card style */
+.add-story-avatar {
     position: absolute;
     top: 0;
     left: 0;
-    right: 0;
-    bottom: 0;
-    background: linear-gradient(to top, rgba(0,0,0,0.6), rgba(0,0,0,0));
-    border-radius: 8px;
+    width: 100%;
+    height: 70%;
+    object-fit: cover;
+    border-radius: 8px 8px 0 0;
+    border: none;
 }
 
-.story-avatar {
+.add-icon-container {
+    width: 32px;
+    height: 32px;
+    background-color: #1877f2;
+    border-radius: 50%;
+    border: 3px solid #ffffff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: absolute;
+    bottom: 40px; /* Position it between image and text */
+    z-index: 2;
+}
+
+.add-icon {
+    color: white;
+    font-size: 20px;
+    font-weight: bold;
+    line-height: 1;
+}
+
+.add-story-card .story-user {
+    color: #050505;
+    font-size: 13px;
+    margin-bottom: 10px;
+    text-shadow: none;
+    z-index: 2;
+}
+
+.loading-overlay {
+    position: absolute;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: rgba(255,255,255,0.7);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 10;
+    font-weight: bold;
+}
+
+/* Friend Story Card */
+.friend-story-card {
+    background-color: #333; /* Fallback */
+}
+
+.story-bg-image {
+    position: absolute;
+    top: 0; left: 0; width: 100%; height: 100%;
+    background-size: cover;
+    background-position: center;
+    transition: transform 0.2s;
+}
+.friend-story-card:hover .story-bg-image {
+    transform: scale(1.05);
+}
+
+/* Dark gradient overlay for text readability */
+.friend-story-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: linear-gradient(to bottom, rgba(0,0,0,0) 50%, rgba(0,0,0,0.6) 100%);
+    z-index: 1;
+    pointer-events: none;
+}
+
+.friend-story-card .story-avatar {
+    position: absolute;
+    top: 10px;
+    left: 10px;
     width: 40px;
     height: 40px;
     border-radius: 50%;
-    border: 3px solid #1877f2; /* Blue border like Facebook stories */
-    z-index: 1;
+    border: 4px solid #1877f2;
+    z-index: 2;
+    object-fit: cover;
 }
 
-.story-user {
-    font-size: 14px;
+.friend-story-card .story-user {
+    position: absolute;
+    bottom: 10px;
+    left: 10px;
+    color: white;
+    font-size: 13px;
     font-weight: 600;
-    z-index: 1;
-    text-shadow: 1px 1px 3px rgba(0,0,0,0.7);
+    z-index: 2;
+}
+
+/* Modal Styles */
+.story-modal-backdrop {
+    position: fixed;
+    top: 0; left: 0; width: 100%; height: 100%;
+    background: rgba(0, 0, 0, 0.9);
+    z-index: 2000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.story-modal-content {
+    position: relative;
+    width: 100%;
+    max-width: 400px; /* Mobile story aspect ratio */
+    height: 80vh;
+    background: #000;
+    border-radius: 8px;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+.close-story-btn {
+    position: absolute;
+    top: 10px;
+    right: 15px;
+    background: none;
+    border: none;
+    color: white;
+    font-size: 30px;
+    cursor: pointer;
+    z-index: 10;
+}
+
+.story-header {
+    position: absolute;
+    top: 20px;
+    left: 20px;
+    display: flex;
+    align-items: center;
+    z-index: 5;
+}
+
+.story-header-avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    margin-right: 10px;
+    border: 2px solid white;
+}
+
+.story-header-name {
+    color: white;
+    font-weight: 600;
+    font-size: 16px;
+    text-shadow: 0 1px 2px rgba(0,0,0,0.5);
+}
+
+.story-video-player {
+    width: 100%;
+    height: 100%;
+    object-fit: contain; /* Or cover if we want to fill */
 }
