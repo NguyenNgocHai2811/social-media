@@ -1,13 +1,17 @@
 const express = require('express');
 const bodyParser = require('body-parser');
 const cors = require('cors');
-const { getSession } = require('./config/neo4j');
+const http = require('http');
 const authRoutes = require('./routes/auth.route')
 const postRoutes = require('./routes/post.route');
 const userRoutes = require('./routes/user.route');
 const friendRoutes = require('./routes/friend.routes');
-const commentRoutes = require('./routes/comment.route')
+const commentRoutes = require('./routes/comment.route');
+const initSocket = require('./socket');
+
+
 const app = express();
+const server = http.createServer(app);
 const port = process.env.PORT || 3001;
 
 // middleware 
@@ -28,8 +32,8 @@ app.get('/', (req, res) => {
   res.send('Hello from the backend!');
 });
 
+initSocket(server);
 
-
-app.listen(port, () => {
+server.listen(port, ()=>{
   console.log(`Server is running on port ${port}`);
-});
+})
