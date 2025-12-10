@@ -26,8 +26,13 @@ const login = async(req, res) =>{
 
         const user= await authService.loginUser({identifier, mat_khau});
 
-           const token = jwt.sign({ ma_nguoi_dung: user.ma_nguoi_dung, email: user.email }, process.env.JWT_SECRET, {
-            expiresIn: '1h',
+           const token = jwt.sign({ 
+               ma_nguoi_dung: user.ma_nguoi_dung, 
+               email: user.email,
+               ten_hien_thi: user.ten_hien_thi,
+               anh_dai_dien: user.anh_dai_dien
+           }, process.env.JWT_SECRET, {
+            expiresIn: '24h',
         });
         res.status(200).json({ user, token });
     } catch (error){

@@ -194,10 +194,28 @@ const deletePost = async (userId, postId) => {
     }
 }
 
+const getPostAuthorId = async (postId) => {
+    const session = getSession();
+    try {
+        const result = await session.run(
+            `MATCH (u:NguoiDung)-[:DANG_BAI]->(p:BaiDang {ma_bai_dang: $postId}) RETURN u.ma_nguoi_dung as authorId`,
+            { postId }
+        );
+        if (result.records.length > 0) {
+            return result.records[0].get('authorId');
+        }
+        return null;
+    } finally {
+        await session.close();
+    }
+};
+
 module.exports = {
     createPost,
     getAllPosts,
     toggleLikePost,
-    deletePost
+    deletePost,
+    getPostAuthorId
 
 };
+

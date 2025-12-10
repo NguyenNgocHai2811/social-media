@@ -2,8 +2,10 @@ const { Server } = require("socket.io");
 const { getFriends } = require('./services/friend.service');
 const { getUserById } = require('./services/user.service');
 
+let io;
+
 const initSocket = (server) => {
-    const io = new Server(server, {
+    io = new Server(server, {
         cors: {
             origin: "*", // Configure based on your needs
             methods: ["GET", "POST"]
@@ -85,4 +87,11 @@ const initSocket = (server) => {
     return io;
 };
 
-module.exports = initSocket;
+const getIO = () => {
+    if (!io) {
+        throw new Error("Socket.io not initialized!");
+    }
+    return io;
+};
+
+module.exports = { initSocket, getIO };
