@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import './RightSidebar.css';
 import { io } from 'socket.io-client';
 import defaultAvatar from '../../assets/images/default-avatar.jpg';
+import { Link, useNavigate } from 'react-router-dom';
 
 const RightSidebar = () => {
     const [onlineFriends, setOnlineFriends] = useState([]);
@@ -56,6 +57,8 @@ const RightSidebar = () => {
                 {onlineFriends.length > 0 ? (
                     onlineFriends.map((friend) => (
                         <li key={friend.ma_nguoi_dung} className="friend-item">
+
+                            <Link to={`/profile/${friend.ma_nguoi_dung}`}>
                             <div className="friend-avatar-container">
                                 <img 
                                     src={friend.anh_dai_dien || defaultAvatar} 
@@ -64,6 +67,7 @@ const RightSidebar = () => {
                                 />
                                 <span className="online-indicator"></span>
                             </div>
+                            </Link>
                             <span className="friend-name">{friend.ten_hien_thi}</span>
                         </li>
                     ))
