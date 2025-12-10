@@ -1,5 +1,8 @@
 const { error } = require('neo4j-driver');
 const postService = require('../services/post.service');
+const notificationService = require('../services/notification.service');
+const friendService = require('../services/friend.service');
+const { getIO } = require('../socket');
 
 const createPost = async (req, res) => {
     try {
@@ -14,6 +17,43 @@ const createPost = async (req, res) => {
         };
 
         const newPost = await postService.createPost(postData);
+
+        // Notify friends
+        try {
+            const friends = await friendService.getFriends(userId);
+            const io = getIO();
+            
+            // Use Promise.all for parallel execution
+            await Promise.all(friends.map(async (friend) => {
+                try {
+                    const notification = await notificationService.createNotification({
+                        recipientId: friend.ma_nguoi_dung,
+                        senderId: userId,
+                        type: 'POST',
+                        content: `${req.user.ten_hien_thi} vừa đăng một bài viết mới`,
+                        relatedId: newPost.ma_bai_dang
+                    });
+                    
+                    // Enrich notification with sender info for real-time display
+                    const notificationWithSender = {
+                        ...notification,
+                        sender: {
+                            ma_nguoi_dung: userId,
+                            ten_hien_thi: req.user.ten_hien_thi,
+                            anh_dai_dien: req.user.anh_dai_dien
+                        }
+                    };
+
+                    io.to(friend.ma_nguoi_dung).emit('newNotification', notificationWithSender);
+                } catch (err) {
+                    console.error(`Failed to notify friend ${friend.ma_nguoi_dung}:`, err);
+                }
+            }));
+        } catch (notifError) {
+            console.error("Failed to send notifications:", notifError);
+            // Don't fail the request if notifications fail
+        }
+
         res.status(201).json(newPost);
     } catch (error) {
         res.status(500).json({ message: error.message });
