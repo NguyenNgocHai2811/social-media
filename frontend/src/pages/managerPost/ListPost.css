@@ -1,0 +1,135 @@
+.list-post-container {
+    padding: 20px;
+    background: #fff;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.page-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+.search-box {
+    display: flex;
+    gap: 10px;
+}
+
+.search-input-post {
+    padding: 8px 12px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    width: 300px;
+    outline: none;
+}
+
+.btn-search {
+    padding: 8px 16px;
+    background-color: #3b82f6;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+.post-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.post-table th, .post-table td {
+    padding: 12px;
+    text-align: left;
+    border-bottom: 1px solid #eee;
+}
+
+.post-table th {
+    background-color: #f9fafb;
+    font-weight: 600;
+    color: #374151;
+}
+/* Style cho ảnh thu nhỏ */
+.post-thumbnail {
+    width: 80px;        /* Chiều rộng cố định */
+    height: 60px;       /* Chiều cao cố định */
+    object-fit: cover;  /* Cắt ảnh vừa khung mà không bị méo */
+    border-radius: 6px; /* Bo góc nhẹ */
+    border: 1px solid #eee;
+    cursor: zoom-in;    /* Hiện icon kính lúp khi di chuột vào */
+    transition: transform 0.2s;
+}
+
+.post-thumbnail:hover {
+    transform: scale(1.1); /* Phóng to nhẹ khi hover */
+}
+
+.no-media {
+    font-size: 0.8rem;
+    color: #9ca3af;
+    font-style: italic;
+}
+
+/* Cột nội dung: Giới hạn độ rộng để không vỡ bảng */
+.content-cell {
+    max-width: 350px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    color: #4b5563;
+}
+
+.author-cell {
+    font-weight: 500;
+    color: #111827;
+}
+
+/* Các con số thống kê */
+.stat-badge {
+    /* 1. Để nội dung nằm ngang và badge tự co giãn vừa khít */
+    display: inline-flex; 
+    align-items: center;  /* Căn giữa icon và số theo chiều dọc */
+    justify-content: center;
+    gap: 6px; /* Khoảng cách nhỏ giữa chữ (Like) và số (1) */
+
+    /* 2. QUAN TRỌNG: Chống rớt số xuống hàng */
+    white-space: nowrap; 
+
+    width: fit-content; 
+    min-width: 70px; 
+
+    /* 4. Khoảng cách và Giao diện */
+    padding: 6px 12px;
+    margin-right: 10px; 
+    margin-bottom: 5px; 
+    
+    border-radius: 20px;
+    font-size: 13px;
+    font-weight: 600;
+}
+
+/* Giữ nguyên màu sắc cũ */
+.like-stat { 
+    background-color: #dbeafe; 
+    color: #1e40af; 
+}
+
+.comment-stat { 
+    background-color: #f3f4f6; 
+    color: #374151; 
+}
+
+.btn-delete {
+    padding: 6px 12px;
+    background-color: #ef4444;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+.btn-delete:hover {
+    background-color: #dc2626;
+}

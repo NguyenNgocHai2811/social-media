@@ -2,13 +2,12 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { Link, useNavigate } from 'react-router-dom';
 import searchIcon from '../../assets/images/search.svg';
-// Icons
 import notification from '../../assets/images/notification.svg';
 import iconChat from '../../assets/images/comment.svg';
 import userIcon from '../../assets/images/Vector.svg';
 import defaultAvatar from '../../assets/images/default-avatar.jpg';
 
-const Header = () => {
+const Header = ({showSearch = true, showAction = true}) => {
     const [user, setUser] = useState(null);
     const navigate = useNavigate();
 
@@ -62,23 +61,29 @@ const Header = () => {
                 <Link to="/newsfeed" className="text-2xl md:text-3xl font-bold text-blue-600 mr-4 no-underline">
                     ConnectF
                 </Link>
+            { showSearch && (
                 <div className="relative hidden md:block">
                     <img src={searchIcon} alt="Search Icon" className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5" />
                     <input type="text" placeholder="Search ConnectF" className="bg-gray-100 border-none rounded-full py-2 pr-10 pl-4 w-60 text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none" />
                 </div>
+            )}
             </div>
 
             <div className="flex items-center gap-1 sm:gap-2">
                 <div className="flex items-center">
-                    <div className="flex items-center justify-center w-10 h-10 rounded-full cursor-pointer hover:bg-gray-200" title="Profile">
-                        <img src={userIcon} alt="user" className="w-6 h-6" />
-                    </div>
-                    <div className="flex items-center justify-center w-10 h-10 rounded-full cursor-pointer hover:bg-gray-200" title="Messages">
-                        <img src={iconChat} alt="chat" className="w-6 h-6" />
-                    </div>
-                    <div className="flex items-center justify-center w-10 h-10 rounded-full cursor-pointer hover:bg-gray-200" title="Notifications">
-                        <img src={notification} alt="notification" className="w-6 h-6" />
-                    </div>
+                    { showAction && (
+                        <>
+                            <div className="flex items-center justify-center w-10 h-10 rounded-full cursor-pointer hover:bg-gray-200" title="Profile">
+                                <img src={userIcon} alt="user" className="w-6 h-6" />
+                            </div>
+                            <div className="flex items-center justify-center w-10 h-10 rounded-full cursor-pointer hover:bg-gray-200" title="Messages">
+                                <img src={iconChat} alt="chat" className="w-6 h-6" />
+                            </div>
+                            <div className="flex items-center justify-center w-10 h-10 rounded-full cursor-pointer hover:bg-gray-200" title="Notifications">
+                                <img src={notification} alt="notification" className="w-6 h-6" />
+                            </div>
+                        </>
+                    )}
                     <div className="flex items-center justify-center w-10 h-10 rounded-full text-gray-600 cursor-pointer hover:bg-gray-200" title="Logout" onClick={handleLogout}>
                         <svg viewBox="0 0 24 24" width="24" height="24" fill="currentColor"><path d="M17 7l-1.41 1.41L18.17 11H8v2h10.17l-2.58 2.58L17 17l5-5zM4 5h8V3H4c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h8v-2H4V5z"></path></svg>
                     </div>

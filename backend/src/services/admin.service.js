@@ -6,7 +6,7 @@ const getAllUsers = async () => {
     try {
         const result = await session.run(`
             MATCH (u:NguoiDung)
-            RETURN u { .ma_nguoi_dung, .ho_ten, .email, .role, .ngay_tao, .trang_thai } as user
+            RETURN u {.ma_nguoi_dung, .anh_dai_dien, .ten_hien_thi, .email, .role, ngay_tao: toString(u.ngay_tao), .trang_thai } as user
             ORDER BY u.ngay_tao DESC
         `);
         return result.records.map(record => record.get('user'));
@@ -180,6 +180,138 @@ const toggleUserStatus = async (userId, newStatus) => {
     }
 };
 
+// lấy danh sách người dùng theo id
+
+const getUserById = async (userId) => {
+    const session = getSession();
+    try {
+        const result = await session.run(`
+            MATCH (u:NguoiDung {ma_nguoi_dung: $userId})
+            RETURN u { .ma_nguoi_dung, .ten_hien_thi, .email, .role, .trang_thai } as user
+        `, { userId });
+
+        if (result.records.length === 0) {
+            return null;    
+        }
+        return result.records[0].get('user');
+    } catch (error) {
+        console.error('getUserById Error:', error);
+        throw error;
+    } finally {
+        await session.close();
+    }
+}
+// Cập nhật thông tin người dùng
+const updateUser = async (userId, updateData)  => {
+    const session = getSession();
+    try {
+        const result = await session.run(`
+            MATCH (u:NguoiDung {ma_nguoi_dung: $userId})
+            set u += {
+            ten_hien_thi: $ten_hien_thi,
+            role: $role,
+            trang_thai: $trang_thai
+            }
+            return u { .ma_nguoi_dung, .ten_hien_thi, .email, .role, .trang_thai } as user
+        ` ,
+        {
+            userId,
+            ten_hien_thi: updateData.ten_hien_thi || null,
+            role: updateData.role || null,
+            trang_thai: updateData.trang_thai || null
+        });
+        if (result.records.length === 0) {
+            return null;    
+        }
+        return result.records[0].get('user');
+          }   catch (error) {
+        console.error('editUserRole Error:', error);
+        throw error;
+         }
+        finally {
+        await session.close();
+    }
+};
+
+// Quản lý lý bài viết
+
+const getManagerPost = async () => {
+    const session = getSession();
+    try {
+        const result = await session.run(`
+            MATCH (n:NguoiDung)-[k:DANG_BAI]->(p:BaiDang)
+            
+            OPTIONAL  MATCH (p)-[:CO_MEDIA] ->(m:Media)
+            OPTIONAL MATCH ()-[l:LIKE]->(p)
+            OPTIONAL MATCH (p)-[:CO_BINH_LUAN]->(b:BinhLuan) 
+            
+            RETURN 
+                p.ma_bai_dang AS ma_bai_dang,
+                p.noi_dung AS noi_dung,
+                n.ten_hien_thi AS ten_hien_thi,
+                m.duong_dan AS duong_dan,
+                toString(k.thoi_gian) AS thoi_gian, 
+                count(l) AS like_count,     
+                count(DISTINCT b) AS comment_count
+            
+            ORDER BY thoi_gian DESC
+        `);
+
+        if (result.records.length === 0) {
+            return []; // Nên trả về mảng rỗng [] thay vì null để Frontend dễ map
+        }
+        const toInt = (value) => {
+        if (value === null || value === undefined) return 0; 
+        if (value.toNumber) return value.toNumber();         
+        return Number(value);                              
+    };
+        return result.records.map(record => ({
+            // 3. Mapping theo đúng Alias đã đặt ở trên (bỏ chữ p. đi)
+            ma_bai_dang: record.get('ma_bai_dang'),
+            noi_dung: record.get('noi_dung'),
+            ten_hien_thi: record.get('ten_hien_thi'),
+            duong_dan: record.get('duong_dan'),
+            thoi_gian: record.get('thoi_gian'), // Đã là string nhờ hàm toString() ở trên
+            
+            // Xử lý số nguyên Neo4j
+            like: toInt(record.get('like_count')),
+            comment: toInt(record.get('comment_count'))
+        }));
+
+    } catch (error) {
+        console.error('getManagerPost Error:', error);
+        throw error;
+    } finally {
+        await session.close();
+    }
+};
+
+
+const deletePostById = async (postId) => {
+    const session = getSession();
+    try {
+        if (!postId) {
+            throw new Error("ID bài viết không được để trống");
+        }
+         await session.run(`
+            MATCH (p:BaiDang {ma_bai_dang: $postId})
+
+            OPTIONAL MATCH (p)-[:CO_MEDIA]->(m:Media)
+
+            OPTIONAL MATCH (p)-[:CO_BINH_LUAN]->(c:BinhLuan)
+
+            DETACH DELETE p, m, c
+        `, { postId: postId });
+        return true;
+        
+    } catch (error) {
+        console.error('Error:', error);
+        throw error;
+    } finally {
+        await session.close();
+    }
+};
+
 module.exports = {
     getTotalUsers,
     getTotalPosts,
@@ -189,5 +321,9 @@ module.exports = {
     getAllUsers,
     searchUsers,
     getActiveUsers,
-    toggleUserStatus
+    toggleUserStatus,
+    getUserById,
+    updateUser,
+    getManagerPost,
+    deletePostById
 }

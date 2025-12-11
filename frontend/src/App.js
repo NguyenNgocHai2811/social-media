@@ -6,6 +6,11 @@ import NewsFeed from './pages/NewsFeedPage/NewsFeed';
 import ProfilePage from './pages/ProfilePage/ProfilePage';
 import FriendRequestsPage from './pages/FriendRequestPage/FriendRequestPage';
 import FriendsPage from './pages/FriendsPage/FriendsPage';
+import LayoutAdmin from './components/layout/layoutAdmin';
+import DashboardPage from './pages/DashBoardPage/dashboardpage';
+import ListUserPage from './pages/ListUserPage/listuserpage';
+import EditUser from './pages/EditUser/EditUser';
+import ListPost from './pages/managerPost/ListPost';
 
 
 // A simple check for authencation
@@ -55,6 +60,45 @@ function App() {
             </PrivateRoute>
           }
         />
+
+        {/* page admin */}
+        <Route path='admin' element={ <LayoutAdmin /> }>
+            {/* page dashboard */}
+            <Route path = 'dashboard' 
+              element={
+                <PrivateRoute>
+                  <DashboardPage />
+                </PrivateRoute>
+                    }>
+            </Route>
+             {/* page listuser */}
+            <Route path = 'users' element={
+                <PrivateRoute>
+                  <ListUserPage />
+                </PrivateRoute>
+              }>
+            </Route>
+
+            {/* page edituser */}
+              <Route path = 'users/edit/:userId' element={
+                  <PrivateRoute>
+                    <EditUser />
+                  </PrivateRoute>
+                }>
+            </Route>
+
+            {/* page posts */}
+            <Route path = 'posts' element={
+                <PrivateRoute>
+                  <ListPost />
+                </PrivateRoute>
+              }>
+            </Route>
+
+
+        </Route>
+
+
         <Route path='/' element={<Navigate to='/newsfeed' />} />
       </Routes>
     </Router>

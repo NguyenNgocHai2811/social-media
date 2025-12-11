@@ -1,0 +1,173 @@
+/* EditUser.css */
+
+.edit-user-container {
+    max-width: 900px;
+    margin: 40px auto;
+    padding: 30px;
+    background-color: #ffffff;
+    border-radius: 12px;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+}
+
+.edit-header {
+    margin-bottom: 30px;
+    border-bottom: 2px solid #f3f4f6;
+    padding-bottom: 15px;
+}
+
+.edit-title {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: #111827;
+    margin: 0;
+}
+
+.form-layout {
+    display: flex;
+    gap: 40px;
+}
+
+/* --- Phần Avatar --- */
+.avatar-section {
+    width: 30%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.avatar-wrapper {
+    position: relative;
+    cursor: pointer;
+    display: inline-block;
+}
+
+/* Input file ẩn */
+.file-input-hidden {
+    display: none;
+}
+
+.avatar-preview {
+    width: 150px;
+    height: 150px;
+    object-fit: cover;
+    border-radius: 50%;
+    border: 3px solid #e5e7eb; /* Màu viền mặc định */
+    transition: all 0.3s ease;
+}
+
+/* Hiệu ứng khi di chuột vào avatar */
+.avatar-wrapper:hover .avatar-preview {
+    border-color: #3b82f6; /* Đổi màu viền khi hover */
+    filter: brightness(0.95);
+}
+
+.camera-icon {
+    position: absolute;
+    bottom: 5px;
+    right: 5px;
+    background: white;
+    border-radius: 50%;
+    padding: 8px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    border: 1px solid #ddd;
+    font-size: 1.2rem;
+    line-height: 1;
+    transition: transform 0.2s;
+}
+
+.avatar-wrapper:hover .camera-icon {
+    transform: scale(1.1);
+    cursor: pointer;
+}
+
+.user-email-text {
+    font-weight: 600;
+    color: #111827;
+    margin-top: 15px;
+}
+
+.user-id-text {
+    font-size: 0.85rem;
+    color: #6b7280;
+    margin-top: 5px;
+    display: block;
+}
+
+/* --- Phần Form Input --- */
+.inputs-section {
+    width: 70%;
+}
+
+.form-group {
+    margin-bottom: 20px;
+}
+
+.form-label {
+    display: block;
+    font-size: 0.95rem;
+    font-weight: 500;
+    color: #374151;
+    margin-bottom: 8px;
+}
+
+.form-input, .form-select {
+    width: 100%;
+    padding: 10px 12px;
+    border: 1px solid #d1d5db;
+    border-radius: 6px;
+    font-size: 1rem;
+    transition: border-color 0.2s;
+    box-sizing: border-box; /* Quan trọng để không bị vỡ layout */
+}
+
+.form-input:focus, .form-select:focus {
+    outline: none;
+    border-color: #3b82f6;
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+/* Input bị disable */
+.form-input:disabled {
+    background-color: #f3f4f6;
+    color: #6b7280;
+    cursor: not-allowed;
+}
+
+/* --- Buttons --- */
+.btn-group {
+    margin-top: 30px;
+    display: flex;
+    gap: 15px;
+    justify-content: flex-end;
+}
+
+.btn-cancel {
+    padding: 10px 20px;
+    background-color: white;
+    border: 1px solid #d1d5db;
+    border-radius: 6px;
+    color: #374151;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+.btn-cancel:hover {
+    background-color: #f9fafb;
+}
+
+.btn-save {
+    padding: 10px 24px;
+    background-color: #2563eb;
+    border: none;
+    border-radius: 6px;
+    color: white;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+.btn-save:hover {
+    background-color: #1d4ed8;
+}
+
