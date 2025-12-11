@@ -7,6 +7,7 @@ import ProfilePage from './pages/ProfilePage/ProfilePage';
 import FriendRequestsPage from './pages/FriendRequestPage/FriendRequestPage';
 import FriendsPage from './pages/FriendsPage/FriendsPage';
 import SearchResults from './pages/SearchFriendPage/SearchFriendPage';
+import ChatPage from './pages/ChatPage/ChatPage';
 // A simple check for authencation
 const isAuthenticated = () => {
   return localStorage.getItem('token') !== null;
@@ -60,6 +61,14 @@ function App() {
           element={
             <PrivateRoute>
               <SearchResults />
+            </PrivateRoute>
+          }
+        />
+        <Route
+          path="/chat"
+          element={
+            <PrivateRoute>
+              <ChatPage />
             </PrivateRoute>
           }
         />
