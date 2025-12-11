@@ -13,6 +13,8 @@ import EditUser from './pages/EditUser/EditUser';
 import ListPost from './pages/managerPost/ListPost';
 
 
+import SearchResults from './pages/SearchFriendPage/SearchFriendPage';
+import ChatPage from './pages/ChatPage/ChatPage';
 // A simple check for authencation
 const isAuthenticated = () => {
   return localStorage.getItem('token') !== null;
@@ -100,6 +102,22 @@ function App() {
 
 
         <Route path='/' element={<Navigate to='/newsfeed' />} />
+        <Route
+          path="/search"
+          element={
+            <PrivateRoute>
+              <SearchResults />
+            </PrivateRoute>
+          }
+        />
+        <Route
+          path="/chat"
+          element={
+            <PrivateRoute>
+              <ChatPage />
+            </PrivateRoute>
+          }
+        />
       </Routes>
     </Router>
   );

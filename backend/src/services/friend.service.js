@@ -32,14 +32,14 @@ const sendFriendRequest = async (senderId, receiverId) => {
             MATCH (receiver:NguoiDung {ma_nguoi_dung: $receiverId})
             MERGE (sender)-[:FRIEND_REQUEST]->(receiver)
           `,
-        {senderId, receiverId}
+            { senderId, receiverId }
         )
     } finally {
         await session.close();
     }
 }
 
-const cancelFriendRequest = async (senderId, receiverId )=>{
+const cancelFriendRequest = async (senderId, receiverId) => {
     const session = driver.getSession();
     try {
         await session.run(
@@ -47,7 +47,7 @@ const cancelFriendRequest = async (senderId, receiverId )=>{
             MATCH (sender:NguoiDung {ma_nguoi_dung: $senderId})-[r:FRIEND_REQUEST]->(receiver:NguoiDung {ma_nguoi_dung: $receiverId})
             DELETE r
             `,
-            {senderId, receiverId}
+            { senderId, receiverId }
         );
 
     } finally {
@@ -63,7 +63,7 @@ const getFriendRequest = async (userId) => {
             MATCH (sender:NguoiDung)-[:FRIEND_REQUEST]->(receiver:NguoiDung {ma_nguoi_dung: $userId})
             RETURN sender
             `,
-            {userId}
+            { userId }
         )
         return result.records.map(record => record.get('sender').properties);
     } finally {
@@ -88,7 +88,7 @@ const acceptFriendRequest = async (currentUserId, senderId) => {
     }
 };
 
-const rejectFriendRequest = async (currentUserId, senderId) =>{
+const rejectFriendRequest = async (currentUserId, senderId) => {
     const session = driver.getSession();
     try {
         await session.run(
@@ -96,14 +96,14 @@ const rejectFriendRequest = async (currentUserId, senderId) =>{
             MATCH (sender:NguoiDung {ma_nguoi_dung: $senderId})-[r:FRIEND_REQUEST]->(receiver:NguoiDung {ma_nguoi_dung: $currentUserId})
             DELETE r
             `,
-            {senderId, currentUserId}
+            { senderId, currentUserId }
         );
     } finally {
         await session.close();
     }
 }
 
-const unFriendUser = async (currentUserId, otherUserId) =>{
+const unFriendUser = async (currentUserId, otherUserId) => {
     const session = driver.getSession();
     try {
         await session.run(
@@ -111,14 +111,14 @@ const unFriendUser = async (currentUserId, otherUserId) =>{
             MATCH (u1:NguoiDung {ma_nguoi_dung: $currentUserId})-[r:IS_FRIENDS_WITH]-(u2:NguoiDung {ma_nguoi_dung: $otherUserId})
             DELETE r
             `,
-            {currentUserId, otherUserId}
+            { currentUserId, otherUserId }
         );
     } finally {
         await session.close();
     }
 };
 
-const getFriends = async (userId) =>{
+const getFriends = async (userId) => {
     const session = driver.getSession();
     try {
         const result = await session.run(
@@ -134,7 +134,7 @@ const getFriends = async (userId) =>{
             anh_dai_dien: record.get('anh_dai_dien')
         }));
     }
-    finally{
+    finally {
         await session.close()
     }
 }
@@ -144,20 +144,46 @@ const searchFriendUser = async (currentUserId, keyword) => {
     try {
         const result = await session.run(
             `
-                MATCH (u:NguoiDung)
-                WHERE toLower(u.ten_hien_thi) CONTAINS toLower($keyword)
-                RETURN {
-                    anh_bia : u.anh_bia,
-                    anh_dai_dien : u.anh_dai_dien,
-                    gioi_thieu : u.gioi_thieu,
-                    song_o_dau : u.song_o_dau,
-                    ten_hien_thi : u.ten_hien_thi
-                } as user
+            MATCH (target:NguoiDung)
+            WHERE toLower(target.ten_hien_thi) CONTAINS toLower($keyword)
+              AND target.ma_nguoi_dung <> $currentUserId
+            
+            // Kiểm tra quan hệ bạn bè (IS_FRIENDS_WITH)
+            OPTIONAL MATCH (me:NguoiDung {ma_nguoi_dung: $currentUserId})-[r:IS_FRIENDS_WITH]-(target)
+            
+            RETURN 
+                target.ma_nguoi_dung AS ma_nguoi_dung,
+                target.ten_hien_thi AS ten_hien_thi,
+                target.anh_dai_dien AS anh_dai_dien,
+                target.anh_bia AS anh_bia,
+                target.song_o_dau AS song_o_dau,
+                CASE WHEN r IS NOT NULL THEN true ELSE false END AS isFriend
             `,
             { keyword, currentUserId }
         );
 
-        return result.records.map(r => r.get("user"));
+        const friends = [];
+        const strangers = [];
+
+        result.records.forEach(record => {
+            const user = {
+                ma_nguoi_dung: record.get('ma_nguoi_dung'),
+                ten_hien_thi: record.get('ten_hien_thi'),
+                anh_dai_dien: record.get('anh_dai_dien'),
+                anh_bia: record.get('anh_bia'),
+                song_o_dau: record.get('song_o_dau')
+            };
+
+            const isFriend = record.get('isFriend');
+
+            if (isFriend) {
+                friends.push(user);
+            } else {
+                strangers.push(user);
+            }
+        });
+
+        return { friends, strangers };
 
     } finally {
         await session.close();
