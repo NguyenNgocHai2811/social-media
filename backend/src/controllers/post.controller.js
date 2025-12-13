@@ -148,14 +148,15 @@ const deletePost = async (req, res) => {
             // Xóa thành công
             return res.status(200).json({ message: 'Post deleted successfully' });
         } else {
-            // Không tìm thấy bài viết hoặc không có quyền
-            // (Vì MATCH không tìm thấy gì)
-            return res.status(403).json({ message: 'Post not found or user not authorized' });
+            return res.status(403).json({
+                success: false,
+                message: "Bài viết không tồn tại hoặc bạn không có quyền xóa"
+            });
         }
     } catch (error) {
         res.status(500).json({ message: error.message })
     }
-}
+};
 module.exports = {
     createPost,
     getAllPosts,

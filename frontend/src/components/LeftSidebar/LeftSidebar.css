@@ -1,8 +1,6 @@
 .left-sidebar-container {
-    padding: 20px 10px;
+    padding: 10px;
     height: 100%;
-    display: flex;
-    flex-direction: column;
 }
 
 .sidebar-nav ul {
@@ -12,26 +10,59 @@
 }
 
 .nav-item {
-    display: flex;
-    align-items: center;
-    padding: 15px 10px;
-    border-radius: 8px;
-    cursor: pointer;
-    transition: background-color 0.2s ease;
+    margin-bottom: 5px;
 }
 
-.nav-item:hover {
-    background-color: #e4e6eb;
+.nav-link {
+    display: flex;
+    align-items: center;
+    padding: 10px 15px;
+    border-radius: 8px;
+    color: #050505; /* Màu chữ mặc định */
+    text-decoration: none;
+    transition: background-color 0.2s;
+    cursor: pointer;
+}
+
+.nav-link:hover {
+    background-color: #e4e6eb; /* Màu nền khi hover */
+}
+
+/* --- QUAN TRỌNG: Style cho trạng thái đang chọn (Active) --- */
+.nav-link.active {
+    background-color: #e7f3ff; /* Nền xanh nhạt */
+    color: #1877f2;            /* Chữ màu xanh Facebook */
+    font-weight: 600;
+}
+
+/* Đổi màu icon khi active */
+.nav-link.active .nav-icon {
+    color: #1877f2;
 }
 
 .nav-icon {
-    font-size: 24px;
-    margin-right: 15px;
-    width: 30px;
-    text-align: center;
+    margin-right: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #65676b;
 }
 
 .nav-text {
-    font-size: 16px;
+    font-size: 15px;
     font-weight: 500;
+}
+
+.sidebar-divider {
+    border: 0;
+    border-top: 1px solid #ced0d4;
+    margin: 10px 15px;
+}
+
+/* Utility class */
+.flex {
+    display: flex;
+}
+.cursor-pointer {
+    cursor: pointer;
 }

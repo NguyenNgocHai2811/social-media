@@ -5,12 +5,13 @@ import { io } from 'socket.io-client';
 
 // Import Icons
 import searchIcon from '../../assets/images/search.svg';
+import notification from '../../assets/images/notification.svg';
 import notificationIcon from '../../assets/images/notification.svg';
 import iconChat from '../../assets/images/comment.svg';
 import userIcon from '../../assets/images/Vector.svg';
 import defaultAvatar from '../../assets/images/default-avatar.jpg';
 
-const Header = () => {
+const Header = ({showSearch = true, showAction = true}) => {
     const [user, setUser] = useState(null);
     const [keyword, setKeyword] = useState('');
     const [notifications, setNotifications] = useState([]);
@@ -197,116 +198,31 @@ const Header = () => {
                 <Link to="/newsfeed" className="text-2xl md:text-3xl font-bold text-blue-600 mr-4 no-underline">
                     ConnectF
                 </Link>
-
-                {/* THANH TÌM KIẾM */}
-                <div className="relative hidden md:block group">
-                    <img
-                        src={searchIcon}
-                        alt="Search Icon"
-                        onClick={handleSearch}
-                        className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 cursor-pointer hover:opacity-70 z-10"
-                    />
-
-                    <input
-                        type="text"
-                        value={keyword}
-                        onChange={(e) => setKeyword(e.target.value)}
-                        onKeyDown={handleSearch}
-                        placeholder="Search ConnectF"
-                        className="bg-gray-100 border-none rounded-full py-2 pr-10 pl-4 w-60 text-sm focus:ring-2 focus:ring-blue-500 focus:bg-white focus:outline-none transition-all duration-200"
-                    />
+            { showSearch && (
+                <div className="relative hidden md:block">
+                    <img src={searchIcon} alt="Search Icon" className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5" />
+                    <input type="text" placeholder="Search ConnectF" className="bg-gray-100 border-none rounded-full py-2 pr-10 pl-4 w-60 text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none" />
                 </div>
+            )}
             </div>
 
             {/* ICONS BÊN PHẢI */}
             <div className="flex items-center gap-1 sm:gap-2">
                 <div className="flex items-center">
-                    
-                    {/* Icon User (Menu) */}
-                    <div className="flex items-center justify-center w-10 h-10 rounded-full cursor-pointer hover:bg-gray-200 transition-colors" title="Menu">
-                        <img src={userIcon} alt="menu" className="w-6 h-6" />
-                    </div>
-
-                    {/* Icon Chat (UPDATED) */}
-                    <div 
-                        className="flex items-center justify-center w-10 h-10 rounded-full cursor-pointer hover:bg-gray-200 transition-colors relative" 
-                        title="Messages"
-                        onClick={handleChatClick}
-                    >
-                        <img src={iconChat} alt="chat" className="w-6 h-6" />
-                        {unreadChatCount > 0 && (
-                            <span className="absolute top-0 right-0 bg-red-500 text-white text-xs font-bold rounded-full h-5 w-5 flex items-center justify-center transform translate-x-1/4 -translate-y-1/4">
-                                {unreadChatCount}
-                            </span>
-                        )}
-                    </div>
-
-                    {/* Icon Notification */}
-                    <div className="relative" ref={dropdownRef}>
-                        <div 
-                            className="flex items-center justify-center w-10 h-10 rounded-full cursor-pointer hover:bg-gray-200 relative" 
-                            title="Notifications"
-                            onClick={() => {
-                                if (!showDropdown) {
-                                    handleMarkAllRead();
-                                }
-                                setShowDropdown(!showDropdown);
-                            }}
-                        >
-                            <img src={notificationIcon} alt="notification" className="w-6 h-6" />
-                            {unreadCount > 0 && (
-                                <span className="absolute top-0 right-0 bg-red-500 text-white text-xs font-bold rounded-full h-5 w-5 flex items-center justify-center transform translate-x-1/4 -translate-y-1/4">
-                                    {unreadCount}
-                                </span>
-                            )}
-                        </div>
-                        
-                        {/* Dropdown Content */}
-                        {showDropdown && (
-                            <div className="absolute right-0 mt-2 w-80 bg-white rounded-md shadow-lg py-1 z-50 max-h-96 overflow-y-auto border border-gray-200">
-                                <div className="px-4 py-2 border-b border-gray-100 font-semibold text-gray-700">
-                                    Notifications
-                                </div>
-                                {notifications.length === 0 ? (
-                                    <div className="px-4 py-3 text-gray-500 text-sm text-center">
-                                        No notifications
-                                    </div>
-                                ) : (
-                                    notifications.map(notif => (
-                                        <div 
-                                            key={notif.id}
-                                            className={`px-4 py-3 hover:bg-gray-50 cursor-pointer flex items-start gap-3 ${!notif.da_doc ? 'bg-blue-50' : ''}`}
-                                            onClick={() => handleNotificationClick(notif)}
-                                        >
-                                            <img 
-                                                src={notif.sender?.anh_dai_dien || defaultAvatar} 
-                                                alt="avatar" 
-                                                className="w-10 h-10 rounded-full object-cover flex-shrink-0"
-                                            />
-                                            <div className="flex-1">
-                                                <p className="text-sm text-gray-800 line-clamp-2">
-                                                    {notif.noi_dung}
-                                                </p>
-                                                <p className="text-xs text-gray-500 mt-1">
-                                                    {new Date(notif.tao_luc).toLocaleString()}
-                                                </p>
-                                            </div>
-                                            {!notif.da_doc && (
-                                                <div className="w-2 h-2 bg-blue-500 rounded-full mt-2"></div>
-                                            )}
-                                        </div>
-                                    ))
-                                )}
+                    { showAction && (
+                        <>
+                            <div className="flex items-center justify-center w-10 h-10 rounded-full cursor-pointer hover:bg-gray-200" title="Profile">
+                                <img src={userIcon} alt="user" className="w-6 h-6" />
                             </div>
-                        )}
-                    </div>
-
-                    {/* Icon Logout */}
-                    <div
-                        className="flex items-center justify-center w-10 h-10 rounded-full text-gray-600 cursor-pointer hover:bg-gray-200 transition-colors"
-                        title="Logout"
-                        onClick={handleLogout}
-                    >
+                            <div className="flex items-center justify-center w-10 h-10 rounded-full cursor-pointer hover:bg-gray-200" title="Messages">
+                                <img src={iconChat} alt="chat" className="w-6 h-6" />
+                            </div>
+                            <div className="flex items-center justify-center w-10 h-10 rounded-full cursor-pointer hover:bg-gray-200" title="Notifications">
+                                <img src={notification} alt="notification" className="w-6 h-6" />
+                            </div>
+                        </>
+                    )}
+                    <div className="flex items-center justify-center w-10 h-10 rounded-full text-gray-600 cursor-pointer hover:bg-gray-200" title="Logout" onClick={handleLogout}>
                         <svg viewBox="0 0 24 24" width="24" height="24" fill="currentColor"><path d="M17 7l-1.41 1.41L18.17 11H8v2h10.17l-2.58 2.58L17 17l5-5zM4 5h8V3H4c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h8v-2H4V5z"></path></svg>
                     </div>
                 </div>
