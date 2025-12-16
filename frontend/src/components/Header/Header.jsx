@@ -5,10 +5,9 @@ import { io } from 'socket.io-client';
 
 // Import Icons
 import searchIcon from '../../assets/images/search.svg';
-import notification from '../../assets/images/notification.svg';
-import notificationIcon from '../../assets/images/notification.svg';
+import notification from '../../assets/images/notification.svg'; // Icon cái chuông
 import iconChat from '../../assets/images/comment.svg';
-import userIcon from '../../assets/images/Vector.svg';
+import userIcon from '../../assets/images/Vector.svg'; // Icon hình người (Friend request hoặc Profile)
 import defaultAvatar from '../../assets/images/default-avatar.jpg';
 
 const Header = ({showSearch = true, showAction = true}) => {
@@ -16,7 +15,7 @@ const Header = ({showSearch = true, showAction = true}) => {
     const [keyword, setKeyword] = useState('');
     const [notifications, setNotifications] = useState([]);
     const [unreadCount, setUnreadCount] = useState(0);
-    const [unreadChatCount, setUnreadChatCount] = useState(0); // New state for chat
+    const [unreadChatCount, setUnreadChatCount] = useState(0); 
     const [showDropdown, setShowDropdown] = useState(false);
     
     const dropdownRef = useRef(null);
@@ -28,7 +27,7 @@ const Header = ({showSearch = true, showAction = true}) => {
         ? process.env.REACT_APP_API_URL
         : process.env.REACT_APP_API_URL_LAN;
 
-    // 1. Fetch User Info, Notifications & Chat Count
+    // --- 1. Fetch User Info, Notifications & Chat Count ---
     useEffect(() => {
         const fetchUser = async () => {
             const token = localStorage.getItem('token');
@@ -86,7 +85,7 @@ const Header = ({showSearch = true, showAction = true}) => {
         fetchUnreadChat();
     }, [navigate, API_BASE]);
 
-    // 2. Socket.IO Setup
+    // --- 2. Socket.IO Setup ---
     useEffect(() => {
         const token = localStorage.getItem('token');
         const userId = localStorage.getItem('userId');
@@ -97,24 +96,12 @@ const Header = ({showSearch = true, showAction = true}) => {
                 transports: ['websocket']
             });
 
-            // Listen for General Notifications
             socketRef.current.on('newNotification', (newNotif) => {
                 setNotifications(prev => [newNotif, ...prev]);
                 setUnreadCount(prev => prev + 1);
             });
             
-            // Listen for New Chat Messages
             socketRef.current.on('newChatMessage', (message) => {
-                // If the message is incoming (not from me), increment unread count
-                // Assuming message.sender.ma_nguoi_dung is available and distinct
-                // We don't have detailed check here if we are already on chat page for that user
-                // Ideally, ChatPage clears it. But global header should show it if we are elsewhere.
-                // Or if we are on chat page, we might want to not increment? 
-                // For simplicity, always increment, and let ChatPage actions (fetch/read) clear it.
-                // But since we can't easily sync state between Header and ChatPage without Context/Redux,
-                // We'll accept a small desync until refresh or navigation.
-                // However, if we are the sender, we shouldn't increment.
-                
                 if (message.sender.ma_nguoi_dung !== userId) {
                      setUnreadChatCount(prev => prev + 1);
                 }
@@ -129,7 +116,7 @@ const Header = ({showSearch = true, showAction = true}) => {
         };
     }, [API_BASE]);
 
-    // 3. Click Outside Logic
+    // --- 3. Click Outside Logic ---
     useEffect(() => {
         const handleClickOutside = (event) => {
             if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
@@ -142,12 +129,11 @@ const Header = ({showSearch = true, showAction = true}) => {
         };
     }, []);
 
+    // --- Handlers ---
     const handleMarkAllRead = async () => {
         if (unreadCount === 0) return;
-
         try {
             const token = localStorage.getItem('token');
-            // Optimistically update UI
             setUnreadCount(0);
             setNotifications(prev => prev.map(n => ({ ...n, da_doc: true })));
 
@@ -160,8 +146,10 @@ const Header = ({showSearch = true, showAction = true}) => {
     };
 
     const handleNotificationClick = (notif) => {
+        // Khi click vào 1 thông báo cụ thể
         setShowDropdown(false);
-        // Could navigate to post here
+        // Logic điều hướng tùy thuộc vào loại thông báo (ví dụ: comment, like, friend request)
+        // navigate(`/post/${notif.postId}`);
     };
 
     const handleLogout = () => {
@@ -179,62 +167,157 @@ const Header = ({showSearch = true, showAction = true}) => {
         }
     };
     
-    // Handler for Chat Icon Click
     const handleChatClick = () => {
         navigate('/chat');
-        // Optionally clear unread count here if we assume opening chat clears all?
-        // Usually it doesn't until we open specific threads.
-        // But for better UX if count is huge? No, keep it per logic.
     };
 
+    // Render loading state nếu chưa có user
     if (!user) {
         return <header className="bg-white px-5 h-[60px] flex items-center shadow-sm"><div>Loading...</div></header>;
     }
 
     return (
         <header className="bg-white px-2.5 sm:px-5 h-[60px] flex items-center justify-between border-b border-gray-200 sticky top-0 z-[1000] shadow-sm">
+            {/* --- LEFT SIDE: LOGO & SEARCH --- */}
             <div className="flex items-center">
-                {/* LOGO */}
                 <Link to="/newsfeed" className="text-2xl md:text-3xl font-bold text-blue-600 mr-4 no-underline">
                     ConnectF
                 </Link>
-            { showSearch && (
-                <div className="relative hidden md:block">
-                    <img src={searchIcon} alt="Search Icon" className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5" />
-                    <input type="text" placeholder="Search ConnectF" className="bg-gray-100 border-none rounded-full py-2 pr-10 pl-4 w-60 text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none" />
-                </div>
-            )}
+                
+                { showSearch && (
+                    <div className="relative hidden md:block group">
+                        <img 
+                            src={searchIcon} 
+                            alt="Search Icon" 
+                            onClick={handleSearch}
+                            className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 cursor-pointer opacity-60 group-hover:opacity-100 transition-opacity" 
+                        />
+                        <input 
+                            type="text" 
+                            value={keyword}
+                            onChange={(e) => setKeyword(e.target.value)}
+                            onKeyDown={handleSearch}
+                            placeholder="Search ConnectF" 
+                            className="bg-gray-100 border-none rounded-full py-2 pr-10 pl-4 w-60 text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none transition-all" 
+                        />
+                    </div>
+                )}
             </div>
 
-            {/* ICONS BÊN PHẢI */}
+            {/* --- RIGHT SIDE: ICONS & PROFILE --- */}
             <div className="flex items-center gap-1 sm:gap-2">
-                <div className="flex items-center">
+                <div className="flex items-center gap-1">
                     { showAction && (
                         <>
-                            <div className="flex items-center justify-center w-10 h-10 rounded-full cursor-pointer hover:bg-gray-200" title="Profile">
+                            {/* Icon Friend / Profile */}
+                            <div 
+                                className="flex items-center justify-center w-10 h-10 rounded-full cursor-pointer hover:bg-gray-100 transition-colors" 
+                                title="Profile"
+                                onClick={() => navigate(`/profile/${user.ma_nguoi_dung}`)}
+                            >
                                 <img src={userIcon} alt="user" className="w-6 h-6" />
                             </div>
-                            <div className="flex items-center justify-center w-10 h-10 rounded-full cursor-pointer hover:bg-gray-200" title="Messages">
+
+                            {/* Icon Chat */}
+                            <div 
+                                className="relative flex items-center justify-center w-10 h-10 rounded-full cursor-pointer hover:bg-gray-100 transition-colors" 
+                                title="Messages"
+                                onClick={handleChatClick}
+                            >
                                 <img src={iconChat} alt="chat" className="w-6 h-6" />
+                                {unreadChatCount > 0 && (
+                                    <span className="absolute top-0 right-0 bg-red-500 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full min-w-[18px] text-center border-2 border-white">
+                                        {unreadChatCount > 9 ? '9+' : unreadChatCount}
+                                    </span>
+                                )}
                             </div>
-                            <div className="flex items-center justify-center w-10 h-10 rounded-full cursor-pointer hover:bg-gray-200" title="Notifications">
+
+                            {/* Icon Notification (with Dropdown) */}
+                            <div 
+                                className="relative flex items-center justify-center w-10 h-10 rounded-full cursor-pointer hover:bg-gray-100 transition-colors" 
+                                title="Notifications"
+                                ref={dropdownRef}
+                                onClick={() => setShowDropdown(!showDropdown)}
+                            >
                                 <img src={notification} alt="notification" className="w-6 h-6" />
+                                
+                                {/* Badge thông báo */}
+                                {unreadCount > 0 && (
+                                    <span className="absolute top-0 right-0 bg-red-500 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full min-w-[18px] text-center border-2 border-white">
+                                        {unreadCount > 9 ? '9+' : unreadCount}
+                                    </span>
+                                )}
+
+                                {/* --- NOTIFICATION DROPDOWN --- */}
+                                {showDropdown && (
+                                    <div className="absolute top-[120%] right-[-60px] sm:right-0 w-[320px] sm:w-[360px] bg-white rounded-lg shadow-xl border border-gray-200 overflow-hidden cursor-default animate-fade-in z-[1100]">
+                                        <div className="flex justify-between items-center px-4 py-3 border-b border-gray-100">
+                                            <h3 className="font-bold text-lg text-gray-800">Thông báo</h3>
+                                            {unreadCount > 0 && (
+                                                <button 
+                                                    onClick={(e) => { e.stopPropagation(); handleMarkAllRead(); }} 
+                                                    className="text-xs text-blue-600 hover:text-blue-800 hover:underline bg-transparent border-none cursor-pointer"
+                                                >
+                                                    Đánh dấu đã đọc
+                                                </button>
+                                            )}
+                                        </div>
+                                        <div className="max-h-[400px] overflow-y-auto">
+                                            {notifications.length === 0 ? (
+                                                <div className="p-4 text-center text-gray-500 text-sm">
+                                                    Không có thông báo nào.
+                                                </div>
+                                            ) : (
+                                                notifications.map((notif) => (
+                                                    <div 
+                                                        key={notif._id || notif.id}
+                                                        onClick={() => handleNotificationClick(notif)}
+                                                        className={`flex items-start px-4 py-3 hover:bg-gray-50 cursor-pointer transition-colors border-b border-gray-50 last:border-none ${!notif.da_doc ? 'bg-blue-50' : 'bg-white'}`}
+                                                    >
+                                                        <img 
+                                                            src={notif.sender?.anh_dai_dien || defaultAvatar} 
+                                                            alt="avatar" 
+                                                            className="w-10 h-10 rounded-full object-cover mr-3 border border-gray-200"
+                                                        />
+                                                        <div className="flex-1">
+                                                            <p className="text-sm text-gray-800 leading-snug">
+                                                                <span className="font-bold">{notif.sender?.ten_hien_thi || 'Người dùng'}</span> {notif.noi_dung}
+                                                            </p>
+                                                            <span className={`text-xs mt-1 block ${!notif.da_doc ? 'text-blue-600 font-medium' : 'text-gray-500'}`}>
+                                                                {new Date(notif.createdAt).toLocaleDateString('vi-VN')}
+                                                            </span>
+                                                        </div>
+                                                        {!notif.da_doc && (
+                                                            <div className="w-2.5 h-2.5 bg-blue-600 rounded-full mt-2 ml-2 flex-shrink-0"></div>
+                                                        )}
+                                                    </div>
+                                                ))
+                                            )}
+                                        </div>
+                                    </div>
+                                )}
                             </div>
                         </>
                     )}
-                    <div className="flex items-center justify-center w-10 h-10 rounded-full text-gray-600 cursor-pointer hover:bg-gray-200" title="Logout" onClick={handleLogout}>
+                    
+                    {/* Logout Button */}
+                    <div 
+                        className="flex items-center justify-center w-10 h-10 rounded-full text-gray-600 cursor-pointer hover:bg-gray-100 transition-colors hover:text-red-500" 
+                        title="Logout" 
+                        onClick={handleLogout}
+                    >
                         <svg viewBox="0 0 24 24" width="24" height="24" fill="currentColor"><path d="M17 7l-1.41 1.41L18.17 11H8v2h10.17l-2.58 2.58L17 17l5-5zM4 5h8V3H4c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h8v-2H4V5z"></path></svg>
                     </div>
                 </div>
 
-                {/* Profile Link */}
-                <Link to={`/profile/${user.ma_nguoi_dung}`} className="flex items-center cursor-pointer no-underline text-gray-800 p-1 rounded-md hover:bg-gray-100 transition-colors">
+                {/* Profile Link (Avatar + Name) */}
+                <Link to={`/profile/${user.ma_nguoi_dung}`} className="flex items-center cursor-pointer no-underline text-gray-800 p-1 pl-2 rounded-full hover:bg-gray-100 transition-colors border border-transparent hover:border-gray-200">
                     <img
                         src={user.anh_dai_dien || defaultAvatar}
                         alt="avatar"
-                        className="w-8 h-8 rounded-full object-cover border border-gray-200"
+                        className="w-8 h-8 rounded-full object-cover border border-gray-300"
                     />
-                    <span className="ml-2 font-medium hidden sm:inline text-sm">{user.ten_hien_thi}</span>
+                    <span className="ml-2 font-medium hidden sm:inline text-sm mr-2">{user.ten_hien_thi}</span>
                 </Link>
             </div>
         </header>
