@@ -171,9 +171,30 @@ const updateUserProfile = async (userId, profileData, files) => {
     }
 };
 
+const getUserRole = async (userId) => {
+    const session = getSession();
+    try {
+        const result = await session.run(
+            `MATCH (u:NguoiDung {ma_nguoi_dung: $userId}) 
+             RETURN u.role AS role`,
+            { userId }
+        );
 
+        if (result.records.length === 0) {
+            return null; // Không tìm thấy user
+        }
+
+        return result.records[0].get('role'); // Trả về 'admin' hoặc 'user'
+    } catch (error) {
+        console.error("Get User Role Error:", error);
+        throw error;
+    } finally {
+        await session.close();
+    }
+};
 module.exports = {
     getUserById,
     updateUserProfile,
     getUserProfileWithPosts,
+    getUserRole
 };

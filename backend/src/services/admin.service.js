@@ -81,8 +81,8 @@ const getNewUsersLast30Days = async () => {
     try {
         const result = await session.run(
             `MATCH (u:NguoiDung)
-            WHERE u.ngay_tao >= timestamp() - (30 * 24 * 60 * 60 * 1000)
-            RETURN COUNT(u) as total`
+                WHERE datetime(u.ngay_tao) >= datetime() - duration('P30D')
+                RETURN COUNT(u) as total`
         );
         if (result.records.length === 0) return 0;
         const total = result.records[0].get('total');
