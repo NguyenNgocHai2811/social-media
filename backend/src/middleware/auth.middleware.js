@@ -28,7 +28,7 @@ const isUserAdmin = async (req, res, next) => {
     try {
         const userId = req.userId;
         const role = await userService.getUserRole(userId);
-        if (role === 'admin' || role === 'ADMIN'){
+        if (role === 'admin'){
             next()
         }else {
             return res.status(403).json({ success: false, message: 'Truy cập bị từ chối: Chỉ dành cho Admin' });
