@@ -83,6 +83,10 @@ const PostList = ({ userID, newPost, posts: postsFromProps }) => {
         }
     }, [newPost]);
 
+    const handlePostDeleted = (deletedPostId) => {
+        setPosts(prevPosts => prevPosts.filter(post => post.ma_bai_dang !== deletedPostId));
+    };
+
     if (loading) return <p className="text-center py-10">Loading posts...</p>;
     if (error) return <p className="text-red-600 p-4 text-center">{error}</p>;
 
@@ -117,7 +121,11 @@ const PostList = ({ userID, newPost, posts: postsFromProps }) => {
                     <p className="text-center py-10 text-gray-500">Chưa có bài viết nào</p>
                 ) : (
                     posts.map(post => (
-                        <Post key={post.ma_bai_dang} post={post} />
+                        <Post 
+                            key={post.ma_bai_dang} 
+                            post={post} 
+                            onPostDeleted={handlePostDeleted}
+                        />
                     ))
                 )}
             </div>

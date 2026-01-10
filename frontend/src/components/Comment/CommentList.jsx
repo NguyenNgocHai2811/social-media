@@ -4,7 +4,7 @@ import Comment from './Comment';
 import CreateComment from './CreateComment';
 import './Comment.css';
 
-const CommentList = ({ postId, onCommentCountChange, initialCommentCount }) => {
+const CommentList = ({ postId, onCommentCountChange, initialCommentCount, postAuthorId }) => {
     const [comments, setComments] = useState([]);
 
     useEffect(() => {
@@ -41,7 +41,7 @@ const CommentList = ({ postId, onCommentCountChange, initialCommentCount }) => {
     const handleCommentDeleted = async (commentId) => {
         try {
             const token = localStorage.getItem('token');
-            await axios.delete(`${process.env.REACT_APP_API_URL}/comments/${commentId}`, {
+            await axios.delete(`${process.env.REACT_APP_API_URL}/api/comments/${commentId}`, {
                 headers: { Authorization: `Bearer ${token}` },
             });
             setComments(comments.filter(c => c.ma_binh_luan !== commentId));
@@ -61,6 +61,7 @@ const CommentList = ({ postId, onCommentCountChange, initialCommentCount }) => {
                         key={comment.ma_binh_luan} 
                         comment={comment}
                         onCommentDeleted={handleCommentDeleted}
+                        postAuthorId={postAuthorId}
                     />
                 ))}
             </div>
