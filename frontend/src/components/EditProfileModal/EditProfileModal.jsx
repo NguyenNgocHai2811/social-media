@@ -90,7 +90,7 @@ const EditProfileModal = ({ user, onClose, onProfileUpdate }) => {
 
     return (
         <div className="modal-backdrop" onClick={onClose}>
-            <div className="modal-content" onClick={e => e.stopPropagation()}>
+            <div className="modal-content" /*onClick={e => e.stopPropagation()}*/>
                 <div className="modal-header">
                     <h2>Chỉnh sửa trang cá nhân</h2>
                     <button onClick={onClose} className="close-button">&times;</button>

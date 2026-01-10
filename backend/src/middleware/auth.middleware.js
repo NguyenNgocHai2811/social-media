@@ -11,7 +11,6 @@ const verifyToken = (req, res, next) => {
 
     try {
         const decoded = jwt.verify(token, process.env.JWT_SECRET);
-        console.log(decoded);
         req.user = decoded;
     } catch (err) {
         return res.status(401).json({ message: err.message});

@@ -172,7 +172,7 @@ const getUnreadCount = async (userId) => {
             `,
             { userId }
         );
-        return result.records[0].get('count').toNumber();
+        return result.records[0].get('count');
     } finally {
         await session.close();
     }
