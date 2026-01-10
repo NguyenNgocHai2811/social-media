@@ -1,12 +1,12 @@
 const express = require('express');
 const adminController = require('../controllers/admin.controller');
-const { verifyAdmin } = require('../middleware/admin.middeware');
-const { verifyToken } = require('../middleware/auth.middleware');
+// const { verifyAdmin } = require('../middleware/admin.middeware');
+const { verifyToken, isUserAdmin } = require('../middleware/auth.middleware');
 
 const router = express.Router();
 
 router.use(verifyToken); // Xác thực token
-router.use(verifyAdmin); // Xác thực quyền admin
+router.use(isUserAdmin); // Xác thực quyền admin
 
 
 // Lấy tất cả thống kê cùng lúc

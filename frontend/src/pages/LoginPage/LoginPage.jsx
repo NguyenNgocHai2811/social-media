@@ -26,7 +26,11 @@ const LoginPage = () => {
                 const { user, token } = response.data;
                 localStorage.setItem('token', token);
                 localStorage.setItem('userId', user.ma_nguoi_dung); 
-                navigate('/newsfeed');
+                if (user.role === 'admin'){
+                    navigate('/admin/dashboard');
+                }else {
+                    navigate('/newsfeed');
+                }
             } else {
                 alert(response.data.message || 'Login failed');
             }

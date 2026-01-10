@@ -153,7 +153,7 @@ const ListUser = () => {
                                         </td>
                                         <td>
                                             <span className="role-badge">
-                                                {user.role || 'USER'}
+                                                {user.role || 'user'}
                                             </span>
                                         </td>
                                         <td className="date-text">

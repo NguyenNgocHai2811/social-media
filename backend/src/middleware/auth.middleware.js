@@ -1,4 +1,6 @@
 const jwt = require('jsonwebtoken');
+const userService = require('../services/user.service');
+
 
 const verifyToken = (req, res, next) => {
    
@@ -12,6 +14,8 @@ const verifyToken = (req, res, next) => {
     try {
         const decoded = jwt.verify(token, process.env.JWT_SECRET);
         req.user = decoded;
+        // set userid to req
+        req.userId = decoded.ma_nguoi_dung;
     } catch (err) {
         return res.status(401).json({ message: err.message});
     }
@@ -19,6 +23,20 @@ const verifyToken = (req, res, next) => {
     return next();
 };
 
+const isUserAdmin = async (req, res, next) => {
+    try {
+        const userId = req.userId;
+        const role = await userService.getUserRole(userId);
+        if (role === 'admin'){
+            next()
+        }else {
+            return res.status(403).json({ success: false, message: 'Truy cập bị từ chối: Chỉ dành cho Admin' });
+        }
+    }catch (error){
+        return res.status(401).json({message: error.message})
+    }
+}
+
 module.exports = {
-    verifyToken,
+    verifyToken, isUserAdmin
 };

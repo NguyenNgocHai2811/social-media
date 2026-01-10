@@ -187,8 +187,8 @@ const EditUser = () => {
                             value={userData.role}
                             onChange={handleChange}
                         >
-                            <option value="USER">USER (Người dùng thường)</option>
-                            <option value="ADMIN">ADMIN (Quản trị viên)</option>
+                            <option value="USER">user</option>
+                            <option value="ADMIN">admin</option>
                         </select>
                     </div>
 
