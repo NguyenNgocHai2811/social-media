@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import axios from 'axios';
 import { Link, useNavigate } from 'react-router-dom';
 import { io } from 'socket.io-client';
+import Notification from '../Notification/Notification';
 
 // Import Icons
 import searchIcon from '../../assets/images/search.svg';
@@ -13,10 +14,10 @@ import defaultAvatar from '../../assets/images/default-avatar.jpg';
 const Header = ({showSearch = true, showAction = true}) => {
     const [user, setUser] = useState(null);
     const [keyword, setKeyword] = useState('');
-    const [notifications, setNotifications] = useState([]);
     const [unreadCount, setUnreadCount] = useState(0);
     const [unreadChatCount, setUnreadChatCount] = useState(0); 
     const [showDropdown, setShowDropdown] = useState(false);
+    const [latestNotification, setLatestNotification] = useState(null);
     
     const dropdownRef = useRef(null);
     const socketRef = useRef(null);
@@ -59,7 +60,7 @@ const Header = ({showSearch = true, showAction = true}) => {
                 const res = await axios.get(`${API_BASE}/api/notifications`, {
                     headers: { Authorization: `Bearer ${token}` }
                 });
-                setNotifications(res.data);
+                // We only need the count here, list is fetched in Notification component
                 const count = res.data.filter(n => !n.da_doc).length;
                 setUnreadCount(count);
             } catch (err) {
@@ -97,8 +98,8 @@ const Header = ({showSearch = true, showAction = true}) => {
             });
 
             socketRef.current.on('newNotification', (newNotif) => {
-                setNotifications(prev => [newNotif, ...prev]);
                 setUnreadCount(prev => prev + 1);
+                setLatestNotification(newNotif);
             });
             
             socketRef.current.on('newChatMessage', (message) => {
@@ -130,28 +131,6 @@ const Header = ({showSearch = true, showAction = true}) => {
     }, []);
 
     // --- Handlers ---
-    const handleMarkAllRead = async () => {
-        if (unreadCount === 0) return;
-        try {
-            const token = localStorage.getItem('token');
-            setUnreadCount(0);
-            setNotifications(prev => prev.map(n => ({ ...n, da_doc: true })));
-
-            await axios.put(`${API_BASE}/api/notifications/mark-all-read`, {}, {
-                headers: { Authorization: `Bearer ${token}` }
-            });
-        } catch (err) {
-            console.error('Failed to mark all notifications as read:', err);
-        }
-    };
-
-    const handleNotificationClick = (notif) => {
-        // Khi click vào 1 thông báo cụ thể
-        setShowDropdown(false);
-        // Logic điều hướng tùy thuộc vào loại thông báo (ví dụ: comment, like, friend request)
-        // navigate(`/post/${notif.postId}`);
-    };
-
     const handleLogout = () => {
         localStorage.removeItem('token');
         localStorage.removeItem('userId');
@@ -250,51 +229,11 @@ const Header = ({showSearch = true, showAction = true}) => {
 
                                 {/* --- NOTIFICATION DROPDOWN --- */}
                                 {showDropdown && (
-                                    <div className="absolute top-[120%] right-[-60px] sm:right-0 w-[320px] sm:w-[360px] bg-white rounded-lg shadow-xl border border-gray-200 overflow-hidden cursor-default animate-fade-in z-[1100]">
-                                        <div className="flex justify-between items-center px-4 py-3 border-b border-gray-100">
-                                            <h3 className="font-bold text-lg text-gray-800">Thông báo</h3>
-                                            {unreadCount > 0 && (
-                                                <button 
-                                                    onClick={(e) => { e.stopPropagation(); handleMarkAllRead(); }} 
-                                                    className="text-xs text-blue-600 hover:text-blue-800 hover:underline bg-transparent border-none cursor-pointer"
-                                                >
-                                                    Đánh dấu đã đọc
-                                                </button>
-                                            )}
-                                        </div>
-                                        <div className="max-h-[400px] overflow-y-auto">
-                                            {notifications.length === 0 ? (
-                                                <div className="p-4 text-center text-gray-500 text-sm">
-                                                    Không có thông báo nào.
-                                                </div>
-                                            ) : (
-                                                notifications.map((notif) => (
-                                                    <div 
-                                                        key={notif._id || notif.id}
-                                                        onClick={() => handleNotificationClick(notif)}
-                                                        className={`flex items-start px-4 py-3 hover:bg-gray-50 cursor-pointer transition-colors border-b border-gray-50 last:border-none ${!notif.da_doc ? 'bg-blue-50' : 'bg-white'}`}
-                                                    >
-                                                        <img 
-                                                            src={notif.sender?.anh_dai_dien || defaultAvatar} 
-                                                            alt="avatar" 
-                                                            className="w-10 h-10 rounded-full object-cover mr-3 border border-gray-200"
-                                                        />
-                                                        <div className="flex-1">
-                                                            <p className="text-sm text-gray-800 leading-snug">
-                                                                <span className="font-bold">{notif.sender?.ten_hien_thi || 'Người dùng'}</span> {notif.noi_dung}
-                                                            </p>
-                                                            <span className={`text-xs mt-1 block ${!notif.da_doc ? 'text-blue-600 font-medium' : 'text-gray-500'}`}>
-                                                                {new Date(notif.createdAt).toLocaleDateString('vi-VN')}
-                                                            </span>
-                                                        </div>
-                                                        {!notif.da_doc && (
-                                                            <div className="w-2.5 h-2.5 bg-blue-600 rounded-full mt-2 ml-2 flex-shrink-0"></div>
-                                                        )}
-                                                    </div>
-                                                ))
-                                            )}
-                                        </div>
-                                    </div>
+                                    <Notification 
+                                        newNotification={latestNotification}
+                                        onUnreadCountChange={setUnreadCount}
+                                        onClose={() => setShowDropdown(false)}
+                                    />
                                 )}
                             </div>
                         </>

@@ -99,7 +99,7 @@ const likePost = async (req, res) => {
         if (result.success && result.liked) {
             try {
                 const authorId = await postService.getPostAuthorId(postId);
-                
+
                 // Only notify if liker is not the author
                 if (authorId && authorId !== userId) {
                     const notification = await notificationService.createNotification({

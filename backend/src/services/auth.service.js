@@ -59,6 +59,7 @@ const loginUser = async (loginData)=>{
         }
         
         const user = result.records[0].get('u').properties;
+        console.log(user)
         const validPassword = await bcrypt.compare(mat_khau, user.mat_khau);
 
         if (!validPassword) {

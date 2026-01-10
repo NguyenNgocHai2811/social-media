@@ -20,6 +20,8 @@ const login = async(req, res) =>{
     try {
         const {identifier, mat_khau }= req.body;
 
+        console.log(identifier, mat_khau)
+
         if(!identifier || !mat_khau) {
             return res.status(400).json({message: 'Please provide identifier and password'});
         }

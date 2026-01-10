@@ -5,7 +5,7 @@ const createNotification = async ({ recipientId, senderId, type, content, relate
     const session = driver.getSession();
     const id = uuidv4();
     try {
-        await session.run(
+        const result = await session.run(
             `
             MATCH (recipient:NguoiDung {ma_nguoi_dung: $recipientId})
             MATCH (sender:NguoiDung {ma_nguoi_dung: $senderId})
@@ -24,6 +24,10 @@ const createNotification = async ({ recipientId, senderId, type, content, relate
             { recipientId, senderId, id, content, type, relatedId }
         );
         
+        if (result.records.length === 0) {
+            throw new Error(`Could not create notification. Sender (${senderId}) or Recipient (${recipientId}) not found.`);
+        }
+
         // Return the notification object with sender info for immediate socket use
         return {
             id,
@@ -42,24 +46,31 @@ const createNotification = async ({ recipientId, senderId, type, content, relate
 const getNotifications = async (userId) => {
     const session = driver.getSession();
     try {
+        // Use OPTIONAL MATCH for sender to ensure notifications are returned even if sender account is deleted/missing
         const result = await session.run(
             `
             MATCH (n:ThongBao)-[:THONG_BAO_CHO]->(recipient:NguoiDung {ma_nguoi_dung: $userId})
-            MATCH (sender:NguoiDung)-[:THONG_BAO_TU]->(n)
+            OPTIONAL MATCH (sender:NguoiDung)-[:THONG_BAO_TU]->(n)
             RETURN n, sender
             ORDER BY n.tao_luc DESC
-            `
+            `,{userId}
         );
         return result.records.map(record => {
             const n = record.get('n').properties;
-            const sender = record.get('sender').properties;
+            const senderNode = record.get('sender');
+            const sender = senderNode ? senderNode.properties : null;
+
             return {
                 ...n,
-                tao_luc: n.tao_luc.toString(), // Convert Neo4j DateTime to string
-                sender: {
+                tao_luc: n.tao_luc ? n.tao_luc.toString() : new Date().toISOString(), // Handle potential null/conversion issues
+                sender: sender ? {
                     ma_nguoi_dung: sender.ma_nguoi_dung,
                     ten_hien_thi: sender.ten_hien_thi,
                     anh_dai_dien: sender.anh_dai_dien
+                } : {
+                    ma_nguoi_dung: 'unknown',
+                    ten_hien_thi: 'Người dùng ẩn',
+                    anh_dai_dien: ''
                 }
             };
         });

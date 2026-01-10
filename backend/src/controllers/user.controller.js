@@ -28,6 +28,7 @@ const getUserProfile = async(req, res) => {
 const updateUserProfile = async (req, res) => {
     try {
         // req.body will contain text fields
+        console.log(req.body)
         // req.files will be an object with fields like 'avatar' and 'anh_bia'
         const updatedUser = await userService.updateUserProfile(req.user.ma_nguoi_dung, req.body, req.files);
         res.status(200).json(updatedUser);
