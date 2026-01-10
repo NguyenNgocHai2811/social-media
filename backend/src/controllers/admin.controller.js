@@ -282,6 +282,26 @@ const deletePostController = async (req, res) => {
         });
     }
 };
+
+// Controller tìm kiếm
+const searchPosts = async (req, res) => {
+    try {
+        const { keyword } = req.query; 
+
+        if (!keyword) {
+            return res.status(400).json({ success: false, message: "Thiếu từ khóa" });
+        }
+
+        const posts = await adminService.searchPosts(keyword);
+
+        return res.status(200).json({
+            success: true,
+            data: posts
+        });
+    } catch (error) {
+        return res.status(500).json({ success: false, message: error.message });
+    }
+};
 module.exports = {
     // Stats
     getTotalUsers,
@@ -298,5 +318,6 @@ module.exports = {
     updateUser,
     // Posts
     getInformationPost,
+    searchPosts,
     deletePostController
 };

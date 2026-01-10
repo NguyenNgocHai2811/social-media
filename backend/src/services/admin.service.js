@@ -312,6 +312,53 @@ const deletePostById = async (postId) => {
     }
 };
 
+// tìm kiếm nội dung bài viết
+const searchPosts = async (keyword) => {
+    const session = getSession();
+    try {
+        const result = await session.run(`
+            MATCH (n:NguoiDung) -[k:DANG_BAI]-> (p:BaiDang)
+            WHERE toLower(p.noi_dung) CONTAINS toLower($keyword) 
+            OR toLower(n.ten_hien_thi) CONTAINS toLower($keyword) 
+
+            OPTIONAL MATCH (p)-[:CO_MEDIA] ->(m:Media)
+            OPTIONAL MATCH ()-[l:LIKE]->(p)
+            OPTIONAL MATCH (p)-[:CO_BINH_LUAN]->(b:BinhLuan)
+
+            RETURN p.ma_bai_dang AS ma_bai_dang,
+                p.noi_dung AS noi_dung,
+                n.ten_hien_thi AS ten_hien_thi,
+                m.duong_dan AS duong_dan,
+                toString(k.thoi_gian) AS thoi_gian, 
+                count(l) AS like_count,     
+                count(DISTINCT b) AS comment_count
+            
+            order BY thoi_gian DESC
+        `, { keyword });
+            if (result.records.length === 0) {  
+            return []; 
+        }
+        const toInt = (value) => {
+        if (value === null || value === undefined) return 0; 
+        if (value.toNumber) return value.toNumber();         
+        return Number(value);                               
+    };
+       return result.records.map(record => ({
+            ma_bai_dang: record.get('ma_bai_dang'),
+            noi_dung: record.get('noi_dung'),
+            ten_hien_thi: record.get('ten_hien_thi'),
+            duong_dan: record.get('duong_dan'),
+            thoi_gian: record.get('thoi_gian'),
+            like: toInt(record.get('like_count')),
+            comment: toInt(record.get('comment_count'))
+        }));
+    } catch (error) {
+        console.error('searchUsers Error:', error);
+        throw error;
+    } finally {
+        await session.close();
+    }
+};
 module.exports = {
     getTotalUsers,
     getTotalPosts,
@@ -325,5 +372,6 @@ module.exports = {
     getUserById,
     updateUser,
     getManagerPost,
-    deletePostById
+    deletePostById,
+    searchPosts
 }

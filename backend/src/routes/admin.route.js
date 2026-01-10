@@ -42,5 +42,10 @@ router.put('/users/:userId', adminController.updateUser);
 // Quản lý bài viết
 router.get('/posts', adminController.getInformationPost);
 
+//  Tìm kiếm bài viết
+router.get('/posts/search', adminController.searchPosts);
+
+// Xóa bài viết theo ID
 router.delete('/posts/:id', adminController.deletePostController);
+
 module.exports = router;
