@@ -172,58 +172,81 @@
     gap: 30px;
     margin-top: 40px;
 }
-
+/* Khung chứa biểu đồ: Làm giống thẻ Card hiện đại */
 .chart-section {
     background: white;
-    border-radius: 12px;
-    padding: 30px;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    border-radius: 16px; /* Bo góc mềm mại hơn */
+    padding: 25px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05); /* Bóng mờ nhẹ tạo độ sâu */
+    transition: transform 0.3s ease, box-shadow 0.3s ease; /* Hiệu ứng mượt */
+    border: 1px solid rgba(0,0,0,0.02); /* Viền siêu mờ */
+    
+    /* Căn giữa nội dung bên trong */
+    display: flex;
+    flex-direction: column;
+}
+
+/* Hiệu ứng khi di chuột vào biểu đồ: Nổi lên nhẹ */
+.chart-section:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
 }
 
 .chart-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 25px;
-    flex-wrap: wrap;
-    gap: 15px;
+    margin-bottom: 20px;
+    padding-bottom: 15px;
+    border-bottom: 1px solid #f0f0f0; /* Đường kẻ ngang mờ ngăn cách tiêu đề */
 }
 
 .chart-header h2 {
-    font-size: 1.3rem;
-    color: #333;
-    font-weight: 600;
+    font-size: 1.25rem;
+    color: #2c3e50;
+    font-weight: 700;
     margin: 0;
+    
+    /* Trang trí thêm cái gạch màu xanh bên trái cho đẹp */
+    border-left: 5px solid #4ECDC4;
+    padding-left: 12px;
 }
 
+/* Các nút thời gian (Giữ nguyên hoặc tinh chỉnh xíu) */
 .time-range-selector {
     display: flex;
-    gap: 10px;
+    gap: 8px;
 }
 
 .time-btn {
-    padding: 8px 16px;
-    border: 2px solid #ddd;
-    background-color: white;
-    border-radius: 6px;
+    padding: 6px 14px;
+    border: 1px solid #e0e0e0;
+    background-color: #f8f9fa;
+    border-radius: 20px; /* Nút bo tròn kiểu Pill */
     cursor: pointer;
-    font-size: 0.9rem;
-    font-weight: 500;
-    transition: all 0.3s ease;
+    font-size: 0.85rem;
+    font-weight: 600;
+    transition: all 0.2s ease;
     color: #666;
 }
 
 .time-btn:hover {
-    border-color: #1976D2;
+    background-color: #e3f2fd;
     color: #1976D2;
+    border-color: #1976D2;
 }
 
 .time-btn.active {
     background-color: #1976D2;
     color: white;
     border-color: #1976D2;
+    box-shadow: 0 2px 5px rgba(25, 118, 210, 0.3);
 }
 
+/* CSS bổ sung để fix lỗi label bị cắt trong SVG */
+.recharts-wrapper {
+    overflow: visible !important;
+}
 @media (max-width: 768px) {
     .dashboard-container {
         flex-direction: column;
