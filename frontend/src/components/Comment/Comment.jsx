@@ -3,11 +3,13 @@ import {Link} from 'react-router-dom';
 import defaultAvatar from '../../assets/images/default-avatar.jpg';
 import './Comment.css';
 
-const Comment = ({comment , onCommentDeleted, onCommentUpdated}) => {
+const Comment = ({comment , onCommentDeleted, onCommentUpdated, postAuthorId}) => {
     const userId = localStorage.getItem('userId');
+    const isCommentOwner = userId === comment.user.ma_nguoi_dung;
+    const isPostOwner = userId === postAuthorId;
     
     const handleDelete = async () => {
-        if(window.confirm('Ban co chac chan muon xoa binh luan khong')){
+        if(window.confirm('Bạn có chắc chắn muốn xóa bình luận này không?')){
             onCommentDeleted(comment.ma_binh_luan);
         }
 
@@ -35,9 +37,9 @@ const Comment = ({comment , onCommentDeleted, onCommentUpdated}) => {
                     </span>
                 </div>
                 <p className="comment-body"> {comment.noi_dung}</p>
-                {userId === comment.user.ma_nguoi_dung&& (
+                {(isCommentOwner || isPostOwner) && (
                     <div className="comment-action">
-                        <button className="comment-delete-btn" onClick={handleDelete}></button>
+                        <button className="comment-delete-btn" onClick={handleDelete}>Xóa</button>
                     </div>
                 )}
             </div>
