@@ -15,6 +15,17 @@ const LoginPage = () => {
         : process.env.REACT_APP_API_URL_LAN;
     const handleSubmit = async (e) => {
         e.preventDefault();
+
+        if (!identifier) {
+            alert("Vui lòng nhập tên đăng nhập hoặc email");
+            return;
+        }
+
+        if (!mat_khau) {
+            alert("Vui lòng nhập mật khẩu");
+            return;
+        }
+
         try {
             // Use the correct API_BASE for the axios call
             const response = await axios.post(`${API_BASE}/api/auth/login`, {
@@ -36,8 +47,13 @@ const LoginPage = () => {
             }
         } catch (error) {
             console.error('Login error:', error);
-            const errorMessage = error.response ? error.response.data.message : `An error occurred during login. Check if the API server is running at ${API_BASE}.`;
-            alert(errorMessage);
+            // Catch 401/404/400 errors usually meaning invalid credentials
+            if (error.response && (error.response.status === 401 || error.response.status === 404 || error.response.status === 400)) {
+                alert("Thông tin đăng nhập không hợp lệ");
+            } else {
+                 const errorMessage = error.response ? error.response.data.message : `An error occurred during login. Check if the API server is running at ${API_BASE}.`;
+                 alert(errorMessage);
+            }
         }
     };
 
@@ -45,14 +61,13 @@ const LoginPage = () => {
         <div className="login-container">
             <div className="login-box">
                 <h1 className="login-logo">ConnectF</h1>
-                <form onSubmit={handleSubmit}>
+                <form onSubmit={handleSubmit} noValidate>
                     
                     <input
                         type="text"
                         placeholder="Nhập email hoặc tên đăng nhập"
                         value={identifier}
                         onChange={(e) => setIdentifier(e.target.value)}
-                        required
                     />
 
                     <input
@@ -61,7 +76,6 @@ const LoginPage = () => {
                         placeholder="Mật khẩu"
                         value={mat_khau}
                         onChange={(e) => setPassword(e.target.value)}
-                        required
                     />
                     <button type="submit" className="login-button">Đăng nhập</button>
                 </form>
