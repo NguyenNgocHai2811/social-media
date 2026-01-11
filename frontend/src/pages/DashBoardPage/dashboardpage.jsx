@@ -16,41 +16,40 @@ const DashboardPage = () => {
             setLoading(true);
             try {
                 const token = localStorage.getItem('token');
-                
-                // Nếu chưa có token, dùng dữ liệu test
-                if (!token) {
-                    console.log('No token found, using test data');
-                    const testData = {
-                        tongNguoiDung: 1250,
-                        tongBaiDang: 3450,
-                        tongLuotTuongTac: 12500,
-                        nguoiDungMoi: 85
-                    };
-                    setStats(testData);
-                    setInteractionData([
-                        { name: 'Like', value: Math.floor(testData.tongLuotTuongTac * 0.6), color: '#FF6B6B' },
-                        { name: 'Comment', value: Math.floor(testData.tongLuotTuongTac * 0.4), color: '#4ECDC4' }
-                    ]);
-                    setLoading(false);
-                    return;
-                }
-
                 const isLocalhost = window.location.hostname === "localhost";
                 const API_BASE = isLocalhost
-                    ? process.env.REACT_APP_API_URL
-                    : process.env.REACT_APP_API_URL_LAN;
+                        ? process.env.REACT_APP_API_URL
+                        : process.env.REACT_APP_API_URL_LAN;
+                
 
                 const response = await axios.get(`${API_BASE}/api/admin/stats`, {
                     headers: { Authorization: `Bearer ${token}` }
                 });
 
                 if (response.data.success) {
-                    setStats(response.data.data);
+                    const data = response.data.data;
+                    setStats({
+                        tongNguoiDung: data.tongNguoiDung,
+                        tongBaiDang: data.tongBaiDang,
+                        nguoiDungMoi: data.nguoiDungMoi,
+                        tongLuotTuongTac: data.interactionDetail.total,
+                    });
                     // Dữ liệu tương tác (Like vs Comment)
                     setInteractionData([ 
-                        { name: 'Like', value: Math.floor(response.data.data.tongLuotTuongTac * 0.6), color: '#FF6B6B' },
-                        { name: 'Comment', value: Math.floor(response.data.data.tongLuotTuongTac * 0.4), color: '#4ECDC4' }
+                        { name: 'Lượt thích', value: data.interactionDetail.likes, color: '#FF6B6B' },
+                        { name: 'Lượt comment', value: data.interactionDetail.comments, color: '#4ECDC4' }
                     ]);
+
+                    if (data.growthChart && data.growthChart.length > 0) {
+                    const realGrowthData = data.growthChart.map(item => ({
+                        name: item.date, // Trục hoành là ngày
+                        users: item.count // Trục tung là số lượng
+                    }));
+                    setGrowthData(realGrowthData);
+                    } else {
+                        // Nếu không có dữ liệu (ví dụ web mới tinh chưa có ai đk), để mảng rỗng
+                        setGrowthData([]); 
+                    }
                 } else {
                     setError('Không thể lấy dữ liệu thống kê');
                 }
@@ -61,32 +60,7 @@ const DashboardPage = () => {
                 setLoading(false);
             }
         };
-
-        // Dữ liệu tăng trưởng (giả lập)
-        const generateGrowthData = () => {
-            if (timeRange === 'month') {
-                // Dữ liệu 30 ngày gần nhất
-                const data = [];
-                for (let i = 0; i < 30; i++) {
-                    data.push({
-                        name: `Ngày ${i + 1}`,
-                        users: Math.floor(Math.random() * 50) + 20
-                    });
-                }
-                setGrowthData(data);
-            } else {
-                // Dữ liệu 12 tháng
-                const months = ['T1', 'T2', 'T3', 'T4', 'T5', 'T6', 'T7', 'T8', 'T9', 'T10', 'T11', 'T12'];
-                const data = months.map((month) => ({
-                    name: month,
-                    users: Math.floor(Math.random() * 500) + 200
-                }));
-                setGrowthData(data);
-            }
-        };
-
         fetchStats();
-        generateGrowthData();
     }, [timeRange]);
 
     return (
@@ -159,21 +133,8 @@ const DashboardPage = () => {
                         {/* Biểu đồ tăng trưởng người dùng */}
                         <section className="chart-section">
                             <div className="chart-header">
-                                <h2>Tăng Trưởng Người Dùng</h2>
-                                <div className="time-range-selector">
-                                    <button 
-                                        className={`time-btn ${timeRange === 'month' ? 'active' : ''}`}
-                                        onClick={() => setTimeRange('month')}
-                                    >
-                                        Tháng
-                                    </button>
-                                    <button 
-                                        className={`time-btn ${timeRange === 'year' ? 'active' : ''}`}
-                                        onClick={() => setTimeRange('year')}
-                                    >
-                                        Năm
-                                    </button>
-                                </div>
+                                <h2>Tăng Trưởng Người Dùng (30 ngày gần nhất)</h2>
+                               
                             </div>
                             {growthData.length > 0 && (
                                 <ResponsiveContainer width="100%" height={400}>
@@ -181,8 +142,10 @@ const DashboardPage = () => {
                                         <CartesianGrid strokeDasharray="3 3" stroke="#e0e0e0" />
                                         <XAxis 
                                             dataKey="name" 
-                                            tick={{ fontSize: 12 }}
-                                            interval={timeRange === 'month' ? 4 : 0}
+                                            interval={0}
+                                            tick={{ fontSize: 11 }}
+                                            // angle={-45}
+                                            height={60}
                                         />
                                         <YAxis tick={{ fontSize: 12 }} />
                                         <Tooltip 
@@ -213,31 +176,34 @@ const DashboardPage = () => {
                                 <h2>Phân Loại Tương Tác</h2>
                             </div>
                             {interactionData.length > 0 && (
-                                <ResponsiveContainer width="100%" height={250}>
-                                    <PieChart>
+                                <ResponsiveContainer width="100%" height={300}>
+                                    <PieChart margin={{ top: 20, right: 30, left: 30, bottom: 5 }}>
                                         <Pie
                                             data={interactionData}
                                             cx="50%"
                                             cy="50%"
-                                            labelLine={false}
-                                            label={({ name, value }) => `${name}: ${value}`}
-                                            outerRadius={70}
+                                            labelLine={true} // Giữ đường kẻ nối
+                                            outerRadius={80} // Kích thước bánh vừa phải
                                             fill="#8884d8"
                                             dataKey="value"
+                                            // Custom nội dung Label: Tên + Số lượng
+                                            label={({ value }) => `${value}`}
                                         >
                                             {interactionData.map((entry, index) => (
                                                 <Cell key={`cell-${index}`} fill={entry.color} />
                                             ))}
                                         </Pie>
                                         <Tooltip 
-                                            formatter={(value) => `${value} lần`}
+                                            formatter={(value) => `${value} lượt`}
                                             contentStyle={{ 
                                                 backgroundColor: '#fff',
-                                                border: '1px solid #ccc',
-                                                borderRadius: '4px'
+                                                borderRadius: '8px',
+                                                boxShadow: '0 2px 10px rgba(0,0,0,0.1)',
+                                                border: 'none'
                                             }}
                                         />
-                                        <Legend />
+                                        {/* Đưa chú thích xuống dưới đáy để mở rộng chiều ngang cho biểu đồ */}
+                                        <Legend verticalAlign="bottom" height={36} iconType="circle"/>
                                     </PieChart>
                                 </ResponsiveContainer>
                             )}

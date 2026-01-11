@@ -1,6 +1,23 @@
 const adminService = require('../services/admin.service');
 
 
+// Lấy tất cả thống kê cùng lúc
+const getOverviewStats = async (req, res) => {
+    try {
+        const stats = await adminService.getOverviewStats();
+        res.json({
+            success: true,
+            data: stats
+        });
+    } catch (error) {
+        console.error("Dashboard Stats Error:", error);
+        res.status(500).json({ 
+            success: false,
+            message: "Lỗi lấy dữ liệu thống kê" 
+        });
+    }
+};
+
 // Lấy tổng số người dùng
 const getTotalUsers = async (req, res) => {
     try {
@@ -69,22 +86,7 @@ const getNewUsersLast30Days = async (req, res) => {
     }
 };
 
-// Lấy tất cả thống kê cùng lúc
-const getOverviewStats = async (req, res) => {
-    try {
-        const stats = await adminService.getOverviewStats();
-        res.json({
-            success: true,
-            data: stats
-        });
-    } catch (error) {
-        console.error("Dashboard Stats Error:", error);
-        res.status(500).json({ 
-            success: false,
-            message: "Lỗi lấy dữ liệu thống kê" 
-        });
-    }
-};
+
 
 
 // Lấy danh sách tất cả người dùng

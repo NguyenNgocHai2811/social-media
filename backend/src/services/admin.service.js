@@ -1,5 +1,12 @@
 const {getSession} = require('../config/neo4j')
 
+
+const toInt = (value) => {
+    if (value === null || value === undefined) return 0;
+    if (typeof value === 'number') return value; // Nếu đã là số thì trả về luôn
+    if (value.toNumber) return value.toNumber(); // Nếu là Neo4j Integer
+    return Number(value); // Trường hợp còn lại (BigInt, String...)
+};
 // Lấy danh sách tất cả người dùng 
 const getAllUsers = async () => {
     const session = getSession();
@@ -27,12 +34,8 @@ const getTotalUsers = async () => {
             RETURN COUNT(u) as total`
         );
         if (result.records.length === 0) return 0;
-        const total = result.records[0].get('total');
-        return typeof total === 'object' ? total.toNumber() : total;
-    } catch (error) {
-        console.error('getTotalUsers Error:', error);
-        throw error;
-    } finally {
+        return toInt(result.records[0].get('total'));
+    } finally  {
         await session.close();
     }
 };
@@ -46,13 +49,9 @@ const getTotalPosts = async () => {
             RETURN COUNT(p) as total`
         );
         if (result.records.length === 0) return 0;
-        const total = result.records[0].get('total');
-        return typeof total === 'object' ? total.toNumber() : total;
-    } catch (error) {
-        console.error('getTotalPosts Error:', error);
-        throw error;
-    } finally {
-        await session.close();
+        return toInt(result.records[0].get('total'));
+    }  finally {
+          await session.close();
     }
 };
 
@@ -61,15 +60,30 @@ const getTotalInteractions = async () => {
     const session = getSession();
     try {
         const result = await session.run(
-            `MATCH (u:NguoiDung)-[r:LIKE|DA_BINH_LUAN]->() 
-            RETURN COUNT(r) as total`
+            `MATCH (u:NguoiDung)-[r:LIKE|DA_BINH_lUAN]->() 
+             RETURN 
+                sum(CASE WHEN type(r) = 'LIKE' THEN 1 ELSE 0 END) as total_like,
+                sum(CASE WHEN type(r) = 'DA_BINH_lUAN' THEN 1 ELSE 0 END) as total_comment`
         );
-        if (result.records.length === 0) return 0;
-        const total = result.records[0].get('total');
-        return typeof total === 'object' ? total.toNumber() : total;
-    } catch (error) {
-        console.error('getTotalInteractions Error:', error);
-        throw error;
+
+        if (result.records.length === 0) {
+            return { likes: 0, comments: 0, total: 0 };
+        }
+
+        // --- SỬA LỖI: Dùng biến 'result' thay vì 'interactionResult' ---
+        const record = result.records[0]; 
+        
+        // Helper chuyển đổi số an toàn (phòng trường hợp null)
+        const toInt = (val) => (val && val.toNumber ? val.toNumber() : Number(val) || 0);
+
+        const likes = toInt(record.get('total_like'));
+        const comments = toInt(record.get('total_comment'));
+
+        return {
+            likes: likes,
+            comments: comments,
+            total: likes + comments
+        };
     } finally {
         await session.close();
     }
@@ -85,11 +99,32 @@ const getNewUsersLast30Days = async () => {
                 RETURN COUNT(u) as total`
         );
         if (result.records.length === 0) return 0;
-        const total = result.records[0].get('total');
-        return typeof total === 'object' ? total.toNumber() : total;
-    } catch (error) {
-        console.error('getNewUsersLast30Days Error:', error);
-        throw error;
+       return toInt(result.records[0].get('total'));
+    } finally {
+        await session.close();
+    }
+};
+
+// Lấy dữ liệu tăng trưởng user theo ngày (30 ngày gần nhất)
+const getUserGrowthStats = async () => {
+    const session = getSession();
+    try {
+        const result = await session.run(`
+            MATCH (u:NguoiDung)
+            WHERE datetime(u.ngay_tao) >= datetime() - duration('P30D')
+            
+            // Hàm date() chỉ lấy ngày tháng năm, bỏ giờ phút
+            RETURN toString(date(u.ngay_tao)) as ngay, count(u) as so_luong
+            ORDER BY ngay ASC
+        `);
+
+        // Map dữ liệu ra mảng
+        const data = result.records.map(record => ({
+            date: record.get('ngay'),           // Ví dụ: "2023-10-25"
+            count: toInt(record.get('so_luong')) // Ví dụ: 5
+        }));
+
+        return data;
     } finally {
         await session.close();
     }
@@ -98,18 +133,20 @@ const getNewUsersLast30Days = async () => {
 // Gom tất cả thống kê - gọi song song 4 hàm trên
 const getOverviewStats = async () => {
     try {
-        const [tongNguoiDung, tongBaiDang, tongLuotTuongTac, nguoiDungMoi] = await Promise.all([
+        const [tongNguoiDung, tongBaiDang, interactions, nguoiDungMoi, growthChart] = await Promise.all([
             getTotalUsers(),
             getTotalPosts(),
             getTotalInteractions(),
-            getNewUsersLast30Days()
+            getNewUsersLast30Days(),
+            getUserGrowthStats()
         ]);
 
         return {
             tongNguoiDung,
             tongBaiDang,
-            tongLuotTuongTac,
-            nguoiDungMoi
+            interactionDetail: interactions,
+            nguoiDungMoi,
+            growthChart: growthChart
         };
     } catch (error) {
         console.error('Error getting overview stats:', error);
