@@ -362,12 +362,5 @@ module.exports = {
     getUserById,
     updateUser,
     getManagerPost,
-<<<<<<< Updated upstream
     deletePostById
-=======
-    deletePostById,
-    searchPosts,
-    getUserGrowthStats
-
->>>>>>> Stashed changes
 }
