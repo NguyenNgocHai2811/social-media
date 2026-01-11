@@ -244,3 +244,84 @@
     justify-content: center;
     cursor: default; /* Inactive as requested */
 }
+
+/* --- RESPONSIVE DESIGN --- */
+
+/* 1. Tablet (Máy tính bảng - Thu nhỏ sidebar lại chút) */
+@media (max-width: 900px) {
+    .chat-sidebar {
+        width: 300px; /* Giảm độ rộng sidebar */
+    }
+}
+
+/* 2. Mobile (Điện thoại) */
+@media (max-width: 768px) {
+    .chat-page {
+        position: relative;
+        height: calc(100vh - 60px); /* Hoặc dùng 100dvh nếu muốn chuẩn hơn trên mobile */
+    }
+
+    /* -- SIDEBAR TRÊN MOBILE -- */
+    .chat-sidebar {
+        width: 100%; /* Chiếm hết màn hình */
+        border-right: none;
+        z-index: 1;
+        /* Mặc định hiển thị Sidebar trước */
+        display: flex; 
+    }
+
+    /* -- CHAT WINDOW TRÊN MOBILE -- */
+    .chat-window {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        z-index: 2;
+        background-color: #fff;
+        
+        /* Mặc định ẩn khung Chat đi để hiện danh sách trước */
+        /* Khi nào user bấm vào tên người dùng thì dùng JS thêm class 'active' vào */
+        display: none; 
+        /* Nếu bạn muốn test giao diện chat, đổi thành display: flex; */
+    }
+
+    /* Class hỗ trợ JS: Khi đang chat thì hiện cửa sổ chat, ẩn sidebar */
+    .chat-window.active {
+        display: flex;
+        animation: slideIn 0.3s ease-in-out; /* Hiệu ứng trượt vào cho mượt */
+    }
+
+    @keyframes slideIn {
+        from { transform: translateX(100%); }
+        to { transform: translateX(0); }
+    }
+
+    /* Tinh chỉnh Header Chat trên Mobile */
+    .chat-header {
+        padding: 0 10px;
+    }
+    
+    .chat-header-name {
+        font-size: 15px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        max-width: 150px; /* Giới hạn tên để không đè nút */
+    }
+
+    /* Tinh chỉnh tin nhắn để tận dụng diện tích */
+    .message {
+        max-width: 85%; /* Tin nhắn dài hơn chút trên đt */
+    }
+
+    .message-bubble {
+        font-size: 14px; /* Font nhỏ hơn chút */
+        padding: 8px 10px;
+    }
+
+    /* Input nhập liệu */
+    .chat-input {
+        font-size: 16px; /* Quan trọng: Font 16px để iPhone không tự zoom khi gõ */
+    }
+}

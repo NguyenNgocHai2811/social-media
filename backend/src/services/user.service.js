@@ -69,8 +69,17 @@ const getUserProfileWithPosts = async (userId) => {
         });
 
         // Step 3: Get friend count (we'll implement this properly later)
-        // For now, let's return a placeholder
-        const friendCount = 0; // Placeholder
+        const friendCountResult = await session.run(
+            `
+            MATCH (u:NguoiDung {ma_nguoi_dung: $userId})
+            RETURN count { (u)-[:IS_FRIENDS_WITH]-(:NguoiDung) } as total_friends
+            `,
+            { userId }
+        );
+        
+        // Lưu ý: Neo4j trả về kiểu Integer object, cần chuyển về số thường (.toNumber())
+        const friendCountInt = friendCountResult.records[0].get('total_friends');
+        const friendCount = friendCountInt
 
         return { user, posts, friendCount };
 

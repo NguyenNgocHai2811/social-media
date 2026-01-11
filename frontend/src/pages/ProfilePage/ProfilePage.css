@@ -33,3 +33,35 @@ min-width: 0;
  /* CỐ ĐỊNH CHIỀU CAO VÀ CHO PHÉP CUỘN */
  height: calc(100vh - 524px);
 }
+
+@media (max-width: 900px) {
+    /* 1. Thay đổi bố cục Container */
+    .profile-content-area {
+        flex-direction: column; /* Xếp chồng 2 cột lên nhau thay vì nằm ngang */
+        align-items: stretch;   /* Kéo giãn full chiều ngang */
+        padding: 0 10px 20px;   /* Giảm padding 2 bên để tận dụng diện tích */
+        margin-top: 10px;       /* Giảm margin top */
+    }
+
+    /* 2. Reset Cột Trái (Thường là thông tin giới thiệu/ảnh) */
+    .profile-left-column {
+        flex-basis: auto;       /* Bỏ giới hạn độ rộng */
+        width: 100%;            /* Full màn hình */
+        
+        /* QUAN TRỌNG: Phải reset chiều cao */
+        height: auto;           
+        overflow: visible;      /* Bỏ thanh cuộn riêng, dùng thanh cuộn của trình duyệt */
+        
+        margin-bottom: 20px;    /* Tạo khoảng cách với cột dưới */
+    }
+
+    /* 3. Reset Cột Phải (Thường là bài đăng/Feed) */
+    .profile-right-column {
+        flex-basis: auto;
+        width: 100%;
+        
+        /* QUAN TRỌNG: Reset chiều cao để nội dung dài ra tự nhiên */
+        height: auto;           
+        overflow: visible;
+    }
+}

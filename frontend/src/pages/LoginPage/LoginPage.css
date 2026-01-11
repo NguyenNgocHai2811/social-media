@@ -1,11 +1,13 @@
-
+/* Container: Đổi height thành min-height để tránh lỗi khi bàn phím hiện lên */
 .login-container {
     background-color: #f0f2f5;
     display: flex;
+    flex-direction: column; /* Đảm bảo logo và box xếp dọc */
     justify-content: center;
     align-items: center;
-    height: 100vh;
-    margin: 0;
+    min-height: 100vh; /* Quan trọng: dùng min-height thay vì height */
+    padding: 20px;     /* Thêm padding để box không dính sát mép màn hình */
+    box-sizing: border-box; /* Đảm bảo padding không làm to khung */
     font-family: Arial, sans-serif;
     text-align: center;
 }
@@ -14,23 +16,30 @@
     color: #007bff;
     font-size: 48px;
     margin-bottom: 20px;
+    font-weight: bold; /* Thường logo nên đậm chút cho nổi */
 }
 
+/* Box đăng nhập: Xử lý linh hoạt độ rộng */
 .login-box {
     background-color: white;
     padding: 40px;
     border-radius: 8px;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-    width: 360px;
+    
+    /* RESPONSIVE LOGIC Ở ĐÂY */
+    width: 100%;       /* Chiếm full chiều ngang cho phép */
+    max-width: 360px;  /* Nhưng không vượt quá 360px (cho Desktop) */
+    box-sizing: border-box; /* Quan trọng: Để padding không làm vỡ layout */
 }
 
 .login-box input {
     width: 100%;
-    padding: 12px;
+    padding: 14px 12px; /* Tăng padding dọc chút cho dễ bấm trên cảm ứng */
     margin-bottom: 15px;
     border: 1px solid #dddfe2;
     border-radius: 6px;
     box-sizing: border-box;
+    font-size: 16px; /* Font 16px để iOS không tự zoom khi gõ */
 }
 
 .login-button {
@@ -43,6 +52,7 @@
     font-size: 16px;
     font-weight: bold;
     cursor: pointer;
+    transition: background 0.2s; /* Hiệu ứng hover mượt hơn */
 }
 
 .login-button:hover {
@@ -53,6 +63,7 @@
     margin-top: 20px;
     display: flex;
     justify-content: space-between;
+    gap: 10px; /* Khoảng cách an toàn giữa 2 link */
 }
 
 .login-links a {
@@ -63,4 +74,29 @@
 
 .login-links a:hover {
     text-decoration: underline;
+}
+
+/* --- RESPONSIVE CHO ĐIỆN THOẠI (Dưới 480px) --- */
+@media (max-width: 480px) {
+    .login-container {
+        padding: 15px; /* Giảm padding lề */
+        background-color: white; /* Nhiều app chọn nền trắng full trên mobile cho sạch */
+    }
+
+    .login-box {
+        padding: 20px; /* Giảm padding trong box để tiết kiệm diện tích */
+        box-shadow: none; /* Bỏ bóng để giao diện phẳng hơn trên mobile (tùy chọn) */
+        border: none; /* Bỏ viền nếu muốn style tối giản */
+    }
+
+    .login-logo {
+        font-size: 36px; /* Thu nhỏ logo một chút */
+        margin-bottom: 30px;
+    }
+    
+    /* Nếu muốn các link ở dưới to hơn chút để dễ bấm */
+    .login-links {
+        flex-direction: column; /* Xếp dọc link nếu màn hình quá bé */
+        gap: 15px;
+    }
 }
